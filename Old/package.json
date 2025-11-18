@@ -1,0 +1,16 @@
+{
+  "name": "rail-delay-finder",
+  "version": "1.0.0",
+  "description": "A secure proxy for the National Rail HSP API.",
+  "main": "server.mjs",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}

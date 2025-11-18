@@ -1,0 +1,26 @@
+{
+  "name": "rail-delay-checker",
+  "version": "1.0.0",
+  "description": "Supports both web-based API proxy and background notifier.",
+  "main": "delay_checker.mjs",
+  "type": "module",
+  "scripts": {
+    "start-web": "node server.mjs",
+    "start-background": "node delay_checker.mjs"
+  },
+  "keywords": [
+    "rail",
+    "delay",
+    "gwr",
+    "notification"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "node-fetch": "^3.3.2",
+    "node-notifier": "^10.0.1"
+  }
+}
