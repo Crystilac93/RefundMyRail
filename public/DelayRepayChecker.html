@@ -3,155 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#059669"> <!-- Emerald-600 matches nav -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>Rail Delay Finder</title>
     
-    <!-- Android & PWA Settings -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#10b981"> <!-- Matches GWR Green -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
-    <!-- Icons -->
-    <link rel="icon" type="image/png" href="train_icon.png">
-    <link rel="apple-touch-icon" href="train_icon.png">
-
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+        /* --- Core Defaults --- */
+        html { 
+            scroll-behavior: smooth; 
+            -webkit-tap-highlight-color: transparent;
+        }
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc;
-            /* Subtle gradient background */
-            background-image: linear-gradient(to bottom, #f8fafc, #f1f5f9);
-            min-height: 100vh;
+            /* Prevent bounce scroll on mobile body to keep app-like feel */
+            overscroll-behavior-y: none; 
         }
 
-        /* Loader Animation */
-        .progress-ring { transition: stroke-dashoffset 0.35s linear; transform: rotate(-90deg); transform-origin: 50% 50%; }
-
-        /* Custom Colors */
-        .text-danger { color: #ef4444; font-weight: 600; }
-        .text-warning { color: #f59e0b; }
-        .text-success { color: #22c55e; }
-
-        /* Mobile-Friendly Inputs (Prevents Zoom on iOS/Android) */
-        input[type="text"], input[type="number"], input[type="date"], select {
-            font-size: 16px; 
-        }
-        @media (min-width: 640px) {
-            input[type="text"], input[type="number"], input[type="date"], select { font-size: 0.875rem; }
-        }
-
-        /* Enhanced Range Slider for Touch */
-        input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; background: #e2e8f0; border-radius: 9999px; outline: none; }
-        input[type="range"]::-webkit-slider-thumb { 
-            -webkit-appearance: none; appearance: none; 
-            width: 28px; height: 28px; /* Larger touch target */
-            background: #10b981; border: 2px solid #fff; 
-            border-radius: 50%; cursor: pointer; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
-            transition: transform 0.1s; 
-        }
-        input[type="range"]::-moz-range-thumb { 
-            width: 28px; height: 28px; 
-            background: #10b981; border: 2px solid #fff; 
-            border-radius: 50%; cursor: pointer; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
-            transition: transform 0.1s; 
-        }
-        input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.1); }
-
-        /* Checkboxes */
-        input[type="checkbox"], input[type="radio"] { 
-            color: #10b981; width: 1.5rem; height: 1.5rem; /* Larger check targets */
-        }
-        input[type="checkbox"]:focus, input[type="radio"]:focus { ring: #10b981; border-color: #10b981; }
-
-        /* Icon Inputs */
-        .icon-input-container { position: relative; }
-        .icon-input-container .icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #9ca3af; pointer-events: none; }
-        .icon-input-container input { padding-left: 2.75rem; }
-
-        /* Ticket Price Input */
-        #ticket-price-settings { appearance: textfield; }
-        #ticket-price-settings::-webkit-outer-spin-button, #ticket-price-settings::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-
-        /* Settings Panel - Full Screen on Mobile */
-        #settings-panel {
-            position: fixed; top: 0; right: 0; bottom: 0; 
-            width: 100%; /* Full width mobile */
-            max-width: 100%;
-            background-color: white; z-index: 50; 
-            display: flex; flex-direction: column;
-            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
-            transform: translateX(100%); /* Hidden by default */
-            transition: transform 0.3s ease-in-out;
-        }
-        @media (min-width: 640px) { 
-            #settings-panel { width: 24rem; max-width: 24rem; } /* Fixed width desktop */
-        }
-
-        /* Autocomplete Dropdown */
-        .autocomplete-results {
-            position: absolute; top: 100%; left: 0; right: 0; z-index: 60;
-            background-color: white; border: 1px solid #d1d5db; border-top: none; 
-            border-radius: 0 0 0.375rem 0.375rem;
-            max-height: 200px; overflow-y: auto; 
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-        .autocomplete-item { padding: 0.75rem 1rem; font-size: 16px; cursor: pointer; color: #374151; border-bottom: 1px solid #f3f4f6; }
-        .autocomplete-item:last-child { border-bottom: none; }
-        .autocomplete-item:hover, .autocomplete-item.is-active { background-color: #ecfdf5; color: #059669; }
-
-        /* Segmented Control */
-        .segmented-control { display: flex; width: 100%; border-radius: 0.5rem; overflow: hidden; border: 1px solid #d1d5db; }
-        .segmented-control label { flex: 1; text-align: center; padding: 0.75rem; font-size: 0.875rem; font-weight: 500; color: #4b5563; background-color: #fff; cursor: pointer; border-right: 1px solid #d1d5db; }
-        .segmented-control label:last-child { border-right: none; }
-        .segmented-control input:checked + label { background-color: #ecfdf5; color: #059669; }
-        .segmented-control input { display: none; } /* Hide actual radio buttons */
-
-        /* Transitions */
-        .transition-opacity { transition: opacity 0.3s ease; }
-        .opacity-0 { opacity: 0; pointer-events: none; }
-        .opacity-100 { opacity: 1; pointer-events: auto; }
-        .hidden { display: none !important; }
-
-        /* KPI Cards */
-        .kpi-card-large {
-            background-color: #10b981; color: white; border-radius: 0.75rem; 
-            padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        .kpi-widget-small {
-            background-color: white; border-radius: 0.75rem; padding: 1rem; 
-            display: flex; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            min-height: 80px;
-        }
-        /* KPI Colors */
-        .kpi-widget-icon { flex-shrink: 0; padding: 0.6rem; border-radius: 9999px; margin-right: 0.75rem; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
-        .kpi-widget-value { font-size: 1.25rem; font-weight: 700; color: #1f2937; line-height: 1.2; }
+        /* --- Mobile Optimizations --- */
         
-        /* Status Colors */
-        .bg-red-200 { background-color: #fecaca; } .text-red-700 { color: #b91c1c; }
-        .bg-amber-100 { background-color: #fef3c7; } .text-amber-600 { color: #d97706; }
-        .bg-orange-100 { background-color: #ffedd5; } .text-orange-600 { color: #ea580c; }
-        .bg-red-100 { background-color: #fee2e2; } .text-red-600 { color: #dc2626; }
+        /* Custom Scrollbar for Settings Panel */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+        /* Mobile Card View for Tables */
+        @media (max-width: 768px) {
+            .mobile-table-card thead { display: none; }
+            .mobile-table-card tbody tr {
+                display: flex;
+                flex-direction: column;
+                background: white;
+                border: 1px solid #e5e7eb;
+                border-radius: 0.75rem;
+                margin-bottom: 1rem;
+                padding: 1rem;
+                box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            }
+            .mobile-table-card td {
+                display: flex;
+                justify-content: space-between;
+                padding: 0.25rem 0;
+                border: none;
+                font-size: 0.95rem;
+            }
+            /* Add labels using data-label attribute */
+            .mobile-table-card td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: #6b7280;
+                margin-right: 1rem;
+            }
+            .mobile-table-card td:last-child {
+                margin-top: 0.75rem;
+                padding-top: 0.75rem;
+                border-top: 1px solid #f3f4f6;
+                font-weight: 700;
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Radial Progress Loader */
+        .progress-ring {
+            transition: stroke-dashoffset 0.35s linear;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        
+        /* Utility Classes */
+        .text-danger { color: #ef4444; font-weight: 600; }
+        .text-success { color: #22c55e; font-weight: 600; }
+        
+        /* Form Elements - Optimised for Touch */
+        input[type="time"], input[type="date"], select {
+            -webkit-appearance: none; appearance: none;
+            background-color: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem; /* Larger radius */
+            padding: 0.6rem 0.875rem; /* Larger touch area */
+            font-size: 1rem; /* Prevents iOS zoom on focus */
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+        input:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+        }
+
+        /* Settings Panel Animation */
+        #settings-panel {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #10b981;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #10b981;
+        }
+        
+        /* KPI Widgets */
+        .kpi-card {
+            transition: transform 0.2s;
+        }
+        .kpi-card:active {
+            transform: scale(0.98);
+        }
+
+        /* Horizontal Scroll Snap for KPIs on Mobile */
+        .kpi-scroller {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1rem;
+        }
+        @media (max-width: 640px) {
+            .kpi-scroller {
+                display: flex;
+                overflow-x: auto;
+                padding-bottom: 1rem;
+                scroll-snap-type: x mandatory;
+                -webkit-overflow-scrolling: touch;
+                margin-right: -1rem; /* Bleed to edge */
+                padding-right: 1rem;
+            }
+            .kpi-scroller > * {
+                flex: 0 0 140px; /* Fixed width cards */
+                scroll-snap-align: start;
+            }
+        }
+        
+        /* Autocomplete */
+        .autocomplete-results {
+            max-height: 200px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
     </style>
 </head>
-<body class="pb-20">
+<body class="min-h-screen flex flex-col">
 
-    <!-- Header -->
-    <nav class="bg-white shadow-md sticky top-0 z-30">
+    <!-- Navbar -->
+    <nav class="bg-emerald-600 shadow-lg sticky top-0 z-30 safe-area-top">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <!-- Logo Image -->
-                    <img src="train_icon.png" alt="Logo" class="h-8 w-8 rounded-sm">
-                    <span class="ml-3 text-lg font-bold text-gray-800 truncate">DelayRepay Finder</span>
+                    <div class="flex-shrink-0 flex items-center">
+                        <span class="text-3xl transform -translate-y-0.5" role="img" aria-label="Train">🚆</span>
+                        <span class="ml-3 text-xl font-bold text-white tracking-tight">DelayRepay</span>
+                    </div>
                 </div>
                 <div class="flex items-center">
-                     <button id="settings-toggle-button" type="button" class="p-2 rounded-full text-gray-500 hover:bg-gray-100 active:bg-gray-200 transition">
+                     <button id="settings-toggle-button" type="button" class="p-2 -mr-2 rounded-full text-emerald-100 hover:text-white hover:bg-emerald-700 focus:outline-none focus:bg-emerald-700 transition-colors">
                         <span class="sr-only">Open settings</span>
                         <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                      </button>
@@ -160,1103 +171,768 @@
         </div>
     </nav>
 
-     <!-- Settings Panel (Initially Hidden) -->
-    <div id="settings-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden opacity-0 transition-opacity duration-300 ease-in-out"></div>
-    <div id="settings-panel" class="fixed top-0 right-0 bottom-0 w-80 bg-white shadow-xl z-50 transform translate-x-full transition-all duration-300 ease-in-out flex flex-col">
+    <!-- Settings Panel (Full width on mobile, drawer on desktop) -->
+    <div id="settings-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 hidden opacity-0 transition-opacity duration-300"></div>
+    <div id="settings-panel" class="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-2xl z-50 transform translate-x-full flex flex-col custom-scrollbar">
         
-        <!-- Header -->
-        <div id="settings-header" class="flex-shrink-0 flex justify-between items-center p-4 border-b border-gray-200">
-            <h2 class="text-xl font-semibold text-gray-800">Settings</h2>
-            <button id="close-settings-button" type="button" class="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                <span class="sr-only">Close settings</span>
-                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        <div class="flex-none px-5 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+            <h2 class="text-lg font-bold text-gray-800">App Settings</h2>
+            <button id="close-settings-button" class="p-2 bg-white rounded-full shadow-sm text-gray-500 hover:text-red-600 border border-gray-200">
+                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
         </div>
         
-        <!-- Main Scrollable Content -->
-        <div id="settings-content" class="flex-grow overflow-y-auto p-4 space-y-6">
-             <!-- Group 1: Ticket Price Input -->
-             <div class="border border-gray-200 rounded-lg p-4">
-                 <h3 class="text-md font-medium text-gray-900 mb-3">Ticket Settings</h3>
-                 <div>
-                    <label for="ticket-price-settings" class="block text-sm font-medium text-gray-700 mb-1">Annual Ticket Price (£)</label>
-                    <div class="icon-input-container">
-                         <span class="icon text-gray-400 font-semibold">£</span>
-                         <input type="text" id="ticket-price-settings" inputmode="decimal" value="7437.92" class="input-like block w-full" required>
-                    </div>
+        <div class="flex-grow p-5 overflow-y-auto space-y-6">
+             <!-- Ticket Settings -->
+             <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                 <div class="flex items-center mb-3">
+                     <div class="p-2 bg-emerald-100 rounded-lg mr-3 text-emerald-600">
+                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                     </div>
+                     <h3 class="font-semibold text-gray-900">Ticket Price</h3>
+                 </div>
+                 <label class="block text-sm text-gray-600 mb-1">Annual Season Ticket Cost</label>
+                 <div class="relative">
+                     <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">£</span>
+                     <input type="text" id="ticket-price-settings" inputmode="decimal" value="7437.92" class="w-full pl-8 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-lg font-medium text-gray-900">
                  </div>
              </div>
-              <!-- Group 2: Station Inputs with Autocomplete -->
-             <div class="border border-gray-200 rounded-lg p-4">
-                 <h3 class="text-md font-medium text-gray-900 mb-4">Journey Settings</h3>
-                 <div class="space-y-4">
-                     <!-- Outbound From -->
-                     <div class="autocomplete-container">
-                        <label for="setting-outbound-from" class="block text-xs font-medium text-gray-600">Outbound From</label>
-                        <input type="text" id="setting-outbound-from" data-crs-code="DID" value="Didcot Parkway [DID]" autocomplete="off" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm p-2">
-                        <div class="autocomplete-results hidden" id="results-setting-outbound-from"></div>
-                        <input type="hidden" id="setting-outbound-from-code" value="DID"> <!-- Hidden input for CRS code -->
+
+             <!-- Journey Settings -->
+             <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm space-y-4">
+                 <div class="flex items-center mb-2">
+                     <div class="p-2 bg-blue-100 rounded-lg mr-3 text-blue-600">
+                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
                      </div>
-                     <!-- Outbound To -->
-                     <div class="autocomplete-container">
-                        <label for="setting-outbound-to" class="block text-xs font-medium text-gray-600">Outbound To</label>
-                        <input type="text" id="setting-outbound-to" data-crs-code="PAD" value="London Paddington [PAD]" autocomplete="off" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm p-2">
-                         <div class="autocomplete-results hidden" id="results-setting-outbound-to"></div>
+                     <h3 class="font-semibold text-gray-900">Route Configuration</h3>
+                 </div>
+                 
+                 <div class="space-y-4">
+                     <div class="autocomplete-container relative">
+                        <label class="block text-xs uppercase tracking-wide font-bold text-gray-500 mb-1">Outbound From (Home)</label>
+                        <input type="text" id="setting-outbound-from" class="w-full rounded-lg border-gray-300 py-2.5 text-sm font-medium focus:ring-emerald-500 focus:border-emerald-500" placeholder="Start Station...">
+                        <div class="autocomplete-results hidden absolute w-full bg-white border border-gray-200 rounded-b-lg shadow-xl z-50" id="results-setting-outbound-from"></div>
+                        <input type="hidden" id="setting-outbound-from-code" value="DID"> 
+                    </div>
+                     <div class="autocomplete-container relative">
+                        <label class="block text-xs uppercase tracking-wide font-bold text-gray-500 mb-1">Outbound To (Work)</label>
+                        <input type="text" id="setting-outbound-to" class="w-full rounded-lg border-gray-300 py-2.5 text-sm font-medium focus:ring-emerald-500 focus:border-emerald-500" placeholder="End Station...">
+                        <div class="autocomplete-results hidden absolute w-full bg-white border border-gray-200 rounded-b-lg shadow-xl z-50" id="results-setting-outbound-to"></div>
                         <input type="hidden" id="setting-outbound-to-code" value="PAD">
                      </div>
-                     <!-- Inbound From -->
-                     <div class="autocomplete-container">
-                        <label for="setting-inbound-from" class="block text-xs font-medium text-gray-600">Inbound From</label>
-                        <input type="text" id="setting-inbound-from" data-crs-code="PAD" value="London Paddington [PAD]" autocomplete="off" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm p-2">
-                         <div class="autocomplete-results hidden" id="results-setting-inbound-from"></div>
-                         <input type="hidden" id="setting-inbound-from-code" value="PAD">
+                 </div>
+                 
+                 <div class="relative py-2">
+                    <div class="absolute inset-0 flex items-center" aria-hidden="true"><div class="w-full border-t border-gray-200"></div></div>
+                    <div class="relative flex justify-center"><span class="bg-white px-2 text-xs text-gray-500">Return Journey (Auto-filled)</span></div>
+                 </div>
+
+                 <div class="space-y-4 opacity-75">
+                     <div class="autocomplete-container relative">
+                        <label class="block text-xs uppercase tracking-wide font-bold text-gray-500 mb-1">Inbound From (Work)</label>
+                        <input type="text" id="setting-inbound-from" class="w-full rounded-lg border-gray-300 py-2.5 text-sm bg-gray-50" readonly>
+                        <input type="hidden" id="setting-inbound-from-code" value="PAD">
                      </div>
-                     <!-- Inbound To -->
-                     <div class="autocomplete-container">
-                        <label for="setting-inbound-to" class="block text-xs font-medium text-gray-600">Inbound To</label>
-                        <input type="text" id="setting-inbound-to" data-crs-code="DID" value="Didcot Parkway [DID]" autocomplete="off" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm p-2">
-                         <div class="autocomplete-results hidden" id="results-setting-inbound-to"></div>
-                         <input type="hidden" id="setting-inbound-to-code" value="DID">
+                     <div class="autocomplete-container relative">
+                        <label class="block text-xs uppercase tracking-wide font-bold text-gray-500 mb-1">Inbound To (Home)</label>
+                        <input type="text" id="setting-inbound-to" class="w-full rounded-lg border-gray-300 py-2.5 text-sm bg-gray-50" readonly>
+                        <input type="hidden" id="setting-inbound-to-code" value="DID">
                      </div>
                  </div>
              </div>
-             <!-- Group 3: Search History -->
-             <div class="border border-gray-200 rounded-lg p-4">
-                 <div class="flex justify-between items-center mb-3">
-                     <h3 class="text-md font-medium text-gray-900">Search History</h3>
-                     <button id="clear-history-button" type="button" class="text-xs font-medium text-emerald-600 hover:text-emerald-800">Clear</button>
-                 </div>
-                 <div id="search-history-list" class="space-y-1 bg-white rounded border border-gray-200 p-2">
-                     <div class="history-item is-empty text-center text-gray-400 text-xs py-2">No history found.</div>
-                 </div>
+             
+             <!-- API Demo Toggle -->
+             <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                 <h3 class="text-sm font-bold text-amber-800 mb-1">Demo Mode</h3>
+                 <p class="text-xs text-amber-700 mb-2">Running without backend API. Generates sample data.</p>
              </div>
         </div>
         
-        <!-- Footer with Save/Load Buttons -->
-        <div id="settings-footer" class="p-4 border-t border-gray-200 bg-gray-50 pb-safe">
-             <p class="text-xs text-gray-500 mb-3">Settings are saved in your browser.</p>
-             <div class="flex space-x-3">
-                <button type="button" id="save-settings-button" class="flex-1 bg-emerald-600 text-white py-3 px-4 rounded-lg shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 text-sm font-medium">Save</button>
-                <button type="button" id="load-settings-button" class="flex-1 bg-slate-100 text-slate-700 py-3 px-4 rounded-lg shadow-sm hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 text-sm font-medium">Load</button>
-             </div>
+        <div class="flex-none p-5 border-t border-gray-200 bg-gray-50 safe-area-bottom">
+             <button type="button" id="save-settings-button" class="w-full bg-emerald-600 text-white py-3.5 px-4 rounded-xl shadow-lg hover:bg-emerald-700 active:scale-[0.98] transition-all text-base font-semibold">Save & Close</button>
         </div>
     </div>
 
 
-    <!-- Main Content Area -->
-    <main class="max-w-3xl mx-auto py-6 px-4 sm:px-6">
+    <!-- Main Content -->
+    <main class="flex-grow max-w-3xl mx-auto w-full px-4 sm:px-6 py-6 space-y-6">
 
-        <!-- Section 1: Search Form Card -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 sm:p-8">
-            <form id="search-form" class="space-y-8">
-
-                <!-- Group 1: Date & Search Type -->
-                <div>
-                    <h3 class="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wide">Search Period</h3>
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <!-- Search Type -->
-                        <div class="segmented-control sm:w-1/3">
-                             <input id="search-type-week" name="search-type" type="radio" value="week" checked>
-                             <label for="search-type-week">Week</label>
-                             <input id="search-type-day" name="search-type" type="radio" value="day">
-                             <label for="search-type-day">Day</label>
-                        </div>
-
-                        <!-- Date Picker -->
-                        <div class="flex-grow">
-                            <div class="icon-input-container">
-                                <svg class="icon h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
-                                <input type="date" id="date-picker" class="icon-input block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500" required>
-                            </div>
-                            <p id="week-commencing-label" class="text-xs text-gray-500 mt-1 min-h-[1.25rem]">w/c ...</p>
-                        </div>
-                    </div>
-                </div>
-
-
-                 <!-- Group 2: Days in Office (Initially Visible) -->
-                 <div id="days-in-office-group">
-                    <h3 class="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wide">Days Travelling</h3>
-                    <div class="flex flex-wrap gap-3">
-                        <label class="inline-flex items-center bg-gray-50 px-4 py-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition active:bg-emerald-100">
-                            <input name="daysInOffice" type="checkbox" checked value="1" class="text-emerald-600 focus:ring-emerald-500"><span class="ml-2 text-base font-medium text-gray-700">Mon</span>
-                        </label>
-                        <label class="inline-flex items-center bg-gray-50 px-4 py-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition active:bg-emerald-100">
-                            <input name="daysInOffice" type="checkbox" checked value="2" class="text-emerald-600 focus:ring-emerald-500"><span class="ml-2 text-base font-medium text-gray-700">Tue</span>
-                        </label>
-                        <label class="inline-flex items-center bg-gray-50 px-4 py-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition active:bg-emerald-100">
-                            <input name="daysInOffice" type="checkbox" checked value="3" class="text-emerald-600 focus:ring-emerald-500"><span class="ml-2 text-base font-medium text-gray-700">Wed</span>
-                        </label>
-                        <label class="inline-flex items-center bg-gray-50 px-4 py-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition active:bg-emerald-100">
-                            <input name="daysInOffice" type="checkbox" checked value="4" class="text-emerald-600 focus:ring-emerald-500"><span class="ml-2 text-base font-medium text-gray-700">Thu</span>
-                        </label>
-                        <label class="inline-flex items-center bg-gray-50 px-4 py-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition active:bg-emerald-100">
-                            <input name="daysInOffice" type="checkbox" value="5" class="text-emerald-600 focus:ring-emerald-500"><span class="ml-2 text-base font-medium text-gray-700">Fri</span>
-                        </label>
-                    </div>
-                </div>
-
-
-                <!-- Group 3: Journey Times -->
-                <div>
-                    <h3 class="text-sm font-medium text-gray-500 mb-4 uppercase tracking-wide">Time Windows</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <!-- Outbound -->
-                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                            <div class="flex justify-between items-center mb-4">
-                                <span class="text-sm font-semibold text-gray-700">Outbound <span id="outbound-stations-label" class="text-xs text-gray-400 font-normal block sm:inline"></span></span>
-                            </div>
-                            <div class="space-y-6">
-                                <div>
-                                    <div class="flex justify-between text-xs text-gray-500 mb-2"><span>From</span><span id="from-time-label-outbound" class="font-bold text-emerald-600 text-base">07:00</span></div>
-                                    <input type="range" id="from-time-outbound" min="0" max="47" value="14" step="1">
-                                </div>
-                                <div>
-                                    <div class="flex justify-between text-xs text-gray-500 mb-2"><span>To</span><span id="to-time-label-outbound" class="font-bold text-emerald-600 text-base">07:30</span></div>
-                                    <input type="range" id="to-time-outbound" min="0" max="47" value="15" step="1">
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Inbound -->
-                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                             <div class="flex justify-between items-center mb-4">
-                                <span class="text-sm font-semibold text-gray-700">Inbound <span id="inbound-stations-label" class="text-xs text-gray-400 font-normal block sm:inline"></span></span>
-                            </div>
-                            <div class="space-y-6">
-                                <div>
-                                    <div class="flex justify-between text-xs text-gray-500 mb-2"><span>From</span><span id="from-time-label-inbound" class="font-bold text-emerald-600 text-base">17:00</span></div>
-                                    <input type="range" id="from-time-inbound" min="0" max="47" value="34" step="1">
-                                </div>
-                                <div>
-                                    <div class="flex justify-between text-xs text-gray-500 mb-2"><span>To</span><span id="to-time-label-inbound" class="font-bold text-emerald-600 text-base">17:30</span></div>
-                                    <input type="range" id="to-time-inbound" min="0" max="47" value="35" step="1">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                 <!-- Submit Button & Loader Area (Moved Below Form Groups) -->
-                <div class="pt-6 flex justify-between items-center min-h-[4rem]"> <!-- Ensure minimum height -->
-                     <!-- Status & Loading (Moved Left) -->
-                     <div id="status-loading-container" class="flex items-center flex-grow mr-4"> <!-- Container for status/loading -->
-                         <div id="loading" class="hidden items-center mr-3">
-                            <div class="w-5 h-5 mr-2">
-                                <svg class="w-full h-full animate-spin text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            </div>
-                            <span id="loading-message" class="ml-2 text-sm text-gray-600">Fetching...</span>
-                        </div>
-                         <div id="status-message" class="text-sm text-left"></div> <!-- Status message aligned left -->
-                     </div>
-
-                    <!-- Submit Button (Moved Right) -->
-                    <button type="submit" id="submit-button" class="bg-emerald-600 text-white py-2.5 px-6 rounded-md shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition duration-150 ease-in-out flex-shrink-0"> <!-- Prevent button shrinking -->
-                        Check Performance
-                    </button>
-                </div>
-            </form>
-
-             <!-- Skeleton Loaders (Initially Hidden) -->
-            <div id="skeleton-loader" class="mt-10 hidden space-y-8">
-                 <!-- Skeleton KPIs -->
-                 <div class="space-y-4">
-                    <div class="h-4 bg-gray-200 rounded w-1/4 skeleton"></div>
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="skeleton skeleton-kpi-large"></div>
-                        <div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-4">
-                            <div class="skeleton skeleton-kpi-small"></div>
-                            <div class="skeleton skeleton-kpi-small"></div>
-                            <div class="skeleton skeleton-kpi-small"></div>
-                            <div class="skeleton skeleton-kpi-small"></div>
-                            <div class="skeleton skeleton-kpi-small"></div>
-                            <div class="skeleton skeleton-kpi-small"></div>
-                        </div>
-                    </div>
-                </div>
-                 <!-- Skeleton Table -->
-                 <div class="space-y-4">
-                     <div class="h-4 bg-gray-200 rounded w-1/3 skeleton"></div>
-                     <div class="bg-white rounded-lg shadow-lg overflow-hidden p-4 space-y-2"> <div class="skeleton skeleton-table-head"></div> <div class="skeleton skeleton-table-row"></div> <div class="skeleton skeleton-table-row"></div> <div class="skeleton skeleton-table-row"></div> <div class="skeleton skeleton-table-footer"></div> </div>
-                 </div>
-                 <!-- Repeat Skeleton KPIs/Table -->
-                 <div class="space-y-4">
-                    <div class="h-4 bg-gray-200 rounded w-1/4 skeleton"></div>
-                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="skeleton skeleton-kpi-large"></div>
-                        <div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-4">
-                            <div class="skeleton skeleton-kpi-small"></div>
-                            <div class="skeleton skeleton-kpi-small"></div>
-                            <div class="skeleton skeleton-kpi-small"></div>
-                            <div class="skeleton skeleton-kpi-small"></div>
-                            <div class="skeleton skeleton-kpi-small"></div>
-                            <div class="skeleton skeleton-kpi-small"></div>
-                        </div>
-                    </div>
-                </div>
-                 <div class="space-y-4">
-                     <div class="h-4 bg-gray-200 rounded w-1/3 skeleton"></div>
-                     <div class="bg-white rounded-lg shadow-lg overflow-hidden p-4 space-y-2"> <div class="skeleton skeleton-table-head"></div> <div class="skeleton skeleton-table-row"></div> <div class="skeleton skeleton-table-row"></div> <div class="skeleton skeleton-table-footer"></div> </div>
-                 </div>
+        <!-- Search Card -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-5 sm:p-6 bg-gradient-to-r from-emerald-50 to-white border-b border-emerald-100">
+                <h1 class="text-xl font-bold text-gray-900">Find Delays</h1>
+                <p class="text-gray-500 text-sm mt-1">Analyze your commute for compensation.</p>
             </div>
 
+            <form id="search-form" class="p-5 sm:p-6 space-y-6">
 
+                <!-- Search Type & Date -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Mode</label>
+                        <div class="flex bg-gray-100 p-1 rounded-lg">
+                            <label class="flex-1 text-center cursor-pointer">
+                                <input type="radio" name="search-type" value="week" checked class="sr-only peer">
+                                <span class="block py-2 text-sm font-medium text-gray-500 rounded-md peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm transition-all">Week</span>
+                            </label>
+                            <label class="flex-1 text-center cursor-pointer">
+                                <input type="radio" name="search-type" value="day" class="sr-only peer">
+                                <span class="block py-2 text-sm font-medium text-gray-500 rounded-md peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm transition-all">Day</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2" id="date-picker-label">Select Week</label>
+                        <div class="relative">
+                            <input type="date" id="date-picker" class="block w-full pl-3 pr-3 py-2.5 rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-gray-800 font-medium">
+                        </div>
+                        <p id="week-commencing-label" class="text-xs text-emerald-600 mt-1 font-medium pl-1">w/c ...</p>
+                    </div>
+                </div>
+
+                <!-- Days in Office (Collapsible) -->
+                <div id="days-in-office-group">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-3">Days Travelled</label>
+                    <div class="flex justify-between gap-2">
+                        <!-- Day Checkboxes (Styled as circular toggles) -->
+                        <label class="flex flex-col items-center cursor-pointer group">
+                            <input type="checkbox" name="daysInOffice" value="1" checked class="peer sr-only">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-sm font-bold peer-checked:bg-emerald-500 peer-checked:text-white transition-all group-active:scale-90">M</div>
+                            <span class="text-[10px] mt-1 text-gray-400 peer-checked:text-emerald-600">Mon</span>
+                        </label>
+                        <label class="flex flex-col items-center cursor-pointer group">
+                            <input type="checkbox" name="daysInOffice" value="2" checked class="peer sr-only">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-sm font-bold peer-checked:bg-emerald-500 peer-checked:text-white transition-all group-active:scale-90">T</div>
+                            <span class="text-[10px] mt-1 text-gray-400 peer-checked:text-emerald-600">Tue</span>
+                        </label>
+                        <label class="flex flex-col items-center cursor-pointer group">
+                            <input type="checkbox" name="daysInOffice" value="3" checked class="peer sr-only">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-sm font-bold peer-checked:bg-emerald-500 peer-checked:text-white transition-all group-active:scale-90">W</div>
+                            <span class="text-[10px] mt-1 text-gray-400 peer-checked:text-emerald-600">Wed</span>
+                        </label>
+                        <label class="flex flex-col items-center cursor-pointer group">
+                            <input type="checkbox" name="daysInOffice" value="4" checked class="peer sr-only">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-sm font-bold peer-checked:bg-emerald-500 peer-checked:text-white transition-all group-active:scale-90">T</div>
+                            <span class="text-[10px] mt-1 text-gray-400 peer-checked:text-emerald-600">Thu</span>
+                        </label>
+                        <label class="flex flex-col items-center cursor-pointer group">
+                            <input type="checkbox" name="daysInOffice" value="5" class="peer sr-only">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-sm font-bold peer-checked:bg-emerald-500 peer-checked:text-white transition-all group-active:scale-90">F</div>
+                            <span class="text-[10px] mt-1 text-gray-400 peer-checked:text-emerald-600">Fri</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Time Selection -->
+                <div class="space-y-4 pt-2 border-t border-gray-100">
+                     <div class="grid grid-cols-2 gap-4">
+                         <div class="col-span-2 flex justify-between items-center">
+                             <span class="text-sm font-medium text-gray-900">Morning <span class="text-gray-400 font-normal ml-1" id="outbound-route-display"></span></span>
+                         </div>
+                         <div>
+                            <label class="block text-[10px] text-gray-400 uppercase tracking-wider mb-1">Depart After</label>
+                            <input type="time" id="from-time-outbound" value="07:00" class="w-full rounded-lg border-gray-300 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-gray-400 uppercase tracking-wider mb-1">Depart Before</label>
+                            <input type="time" id="to-time-outbound" value="07:30" class="w-full rounded-lg border-gray-300 text-sm">
+                        </div>
+                     </div>
+                     
+                     <div class="grid grid-cols-2 gap-4">
+                         <div class="col-span-2 flex justify-between items-center mt-2">
+                             <span class="text-sm font-medium text-gray-900">Evening <span class="text-gray-400 font-normal ml-1" id="inbound-route-display"></span></span>
+                         </div>
+                         <div>
+                            <label class="block text-[10px] text-gray-400 uppercase tracking-wider mb-1">Depart After</label>
+                            <input type="time" id="from-time-inbound" value="17:00" class="w-full rounded-lg border-gray-300 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-gray-400 uppercase tracking-wider mb-1">Depart Before</label>
+                            <input type="time" id="to-time-inbound" value="17:30" class="w-full rounded-lg border-gray-300 text-sm">
+                        </div>
+                     </div>
+                </div>
+
+                <!-- Action Button -->
+                <button type="submit" id="submit-button" class="w-full bg-emerald-600 text-white py-4 rounded-xl shadow-lg hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 transition-all duration-200 flex justify-center items-center text-lg font-bold active:scale-[0.98]">
+                    <span id="btn-text">Check Performance</span>
+                    <!-- Spinner -->
+                    <svg id="btn-spinner" class="animate-spin ml-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                </button>
+                
+                <div id="status-message" class="text-center text-sm min-h-[1.25rem]"></div>
+            </form>
         </div>
 
-        <!-- Section 2: Results Area (Initially Hidden with transition) -->
-        <div id="results-area" class="mt-10 opacity-0 hidden transition-opacity duration-500 pb-safe">
+        <!-- Results Section -->
+        <div id="results-area" class="hidden space-y-8 transition-opacity duration-500 ease-in-out pb-12">
 
-            <!-- In-Office KPI Summary Dashboard -->
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">In-Office Summary</h2>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6"> <!-- Main grid -->
-                <!-- Large Refund Card -->
-                <div class="lg:col-span-1 kpi-card-large">
+            <!-- Summary KPI Card -->
+            <div>
+                <h2 id="in-office-summary-heading" class="text-lg font-bold text-gray-900 mb-3 px-1">Summary</h2>
+                
+                <!-- Refund Total Hero -->
+                <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl p-6 text-white shadow-lg mb-4 flex justify-between items-center">
                     <div>
-                        <div class="kpi-card-large-label">
-                            <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.25 7.756a4.5 4.5 0 100 8.488M7.5 10.5h5.25m-5.25 3h5.25M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                            Total Est. Refund
-                        </div>
-                        <div id="total-refund-kpi-office" class="kpi-card-large-value">£0.00</div>
+                        <p class="text-emerald-100 text-sm font-medium mb-1">Estimated Refund</p>
+                        <p id="total-refund-kpi-office" class="text-4xl font-bold tracking-tight">£0.00</p>
+                    </div>
+                    <div class="bg-white/20 p-3 rounded-full backdrop-blur-sm">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     </div>
                 </div>
-                <!-- Grid for smaller KPIs -->
-                <div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    <!-- Total -->
-                    <div class="kpi-widget-small">
-                        <div class="kpi-widget-icon bg-emerald-100">
-                             <svg class="h-5 w-5 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.125-.504 1.125-1.125V14.25m-17.25 4.5h12.75m-12.75 0V6.75A2.25 2.25 0 014.5 4.5h15A2.25 2.25 0 0121.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25m-17.25 0h.008v.008H3.375z" /></svg>
-                        </div>
-                         <div class="kpi-widget-content">
-                            <dt class="kpi-widget-label">Total</dt>
-                            <dd id="total-journeys-kpi-office" class="kpi-widget-value">0</dd>
-                        </div>
-                    </div>
-                    <!-- 15-29 -->
-                    <div class="kpi-widget-small">
-                        <div class="kpi-widget-icon bg-amber-100">
-                            <svg class="h-5 w-5 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
-                        </div>
-                         <div class="kpi-widget-content">
-                            <dt class="kpi-widget-label">15-29m</dt>
-                            <dd id="delayed-15-29-office" class="kpi-widget-value is-delayed">0</dd>
-                        </div>
-                    </div>
-                    <!-- 30-59 -->
-                     <div class="kpi-widget-small">
-                        <div class="kpi-widget-icon bg-orange-100">
-                            <svg class="h-5 w-5 text-orange-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
-                        </div>
-                         <div class="kpi-widget-content">
-                            <dt class="kpi-widget-label">30-59m</dt>
-                            <dd id="delayed-30-59-office" class="kpi-widget-value is-delayed-medium">0</dd>
-                        </div>
-                    </div>
-                    <!-- 60-119 -->
-                     <div class="kpi-widget-small">
-                        <div class="kpi-widget-icon bg-red-100">
-                             <svg class="h-5 w-5 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
-                        </div>
-                         <div class="kpi-widget-content">
-                            <dt class="kpi-widget-label">60-119m</dt>
-                            <dd id="delayed-60-119-office" class="kpi-widget-value is-delayed-high">0</dd>
-                        </div>
-                    </div>
-                     <!-- 120+ -->
-                     <div class="kpi-widget-small">
-                        <div class="kpi-widget-icon bg-red-200">
-                             <svg class="h-5 w-5 text-red-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
-                        </div>
-                         <div class="kpi-widget-content">
-                            <dt class="kpi-widget-label">120m+</dt>
-                            <dd id="delayed-120-plus-office" class="kpi-widget-value is-delayed-high">0</dd>
-                        </div>
-                    </div>
+
+                <!-- Scrollable Stats -->
+                <div class="kpi-scroller">
                     <!-- Cancelled -->
-                     <div class="kpi-widget-small">
-                        <div class="kpi-widget-icon bg-red-200">
-                             <svg class="h-5 w-5 text-red-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                    <div class="kpi-card bg-red-500 rounded-xl p-4 shadow-md text-white">
+                        <div class="flex items-start justify-between mb-2">
+                            <span class="bg-white/20 p-1.5 rounded-lg"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></span>
+                            <span class="text-2xl font-bold" id="cancelled-kpi-office">0</span>
                         </div>
-                         <div class="kpi-widget-content">
-                            <dt class="kpi-widget-label">Cancelled</dt>
-                            <dd id="cancelled-kpi-office" class="kpi-widget-value is-cancelled">0</dd>
+                        <p class="text-xs font-medium text-red-100 uppercase">Cancelled</p>
+                    </div>
+                    <!-- Severe -->
+                    <div class="kpi-card bg-red-600 rounded-xl p-4 shadow-md text-white">
+                         <div class="flex items-start justify-between mb-2">
+                            <span class="bg-white/20 p-1.5 rounded-lg"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></span>
+                            <span class="text-2xl font-bold" id="delayed-120-plus-office">0</span>
                         </div>
+                        <p class="text-xs font-medium text-red-100 uppercase">Severe (120+)</p>
+                    </div>
+                    <!-- Major -->
+                    <div class="kpi-card bg-orange-500 rounded-xl p-4 shadow-md text-white">
+                        <div class="flex items-start justify-between mb-2">
+                            <span class="bg-white/20 p-1.5 rounded-lg"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></span>
+                            <span class="text-2xl font-bold" id="delayed-60-119-office">0</span>
+                        </div>
+                        <p class="text-xs font-medium text-orange-100 uppercase">Long (60+)</p>
+                    </div>
+                    <!-- Medium -->
+                    <div class="kpi-card bg-amber-500 rounded-xl p-4 shadow-md text-white">
+                        <div class="flex items-start justify-between mb-2">
+                            <span class="bg-white/20 p-1.5 rounded-lg"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></span>
+                            <span class="text-2xl font-bold" id="delayed-30-59-office">0</span>
+                        </div>
+                         <p class="text-xs font-medium text-amber-100 uppercase">Medium (30+)</p>
+                    </div>
+                    <!-- Minor -->
+                    <div class="kpi-card bg-yellow-500 rounded-xl p-4 shadow-md text-white">
+                        <div class="flex items-start justify-between mb-2">
+                            <span class="bg-white/20 p-1.5 rounded-lg"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></span>
+                            <span class="text-2xl font-bold" id="delayed-15-29-office">0</span>
+                        </div>
+                         <p class="text-xs font-medium text-yellow-100 uppercase">Short (15+)</p>
                     </div>
                 </div>
             </div>
 
-            <!-- In-Office Results Table Card -->
-            <div class="mt-8 bg-white rounded-xl shadow-lg overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-xl font-semibold text-gray-900">In-Office Journey Details</h2>
+            <!-- Detail List (Responsive) -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="font-semibold text-gray-700">Details</h3>
+                    <div class="flex items-center">
+                        <span class="text-xs text-gray-500 mr-2">Delays Only</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="toggle-office-delays" class="sr-only peer" checked>
+                            <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                        </label>
+                    </div>
                 </div>
+                
+                <!-- Mobile Responsive Table -->
                 <div class="overflow-x-auto">
-                    <table class="min-w-full" id="results-table-office">
-                        <thead class="bg-slate-50">
+                    <table class="min-w-full mobile-table-card" id="results-table-office">
+                        <thead class="bg-gray-50 border-b border-gray-200">
                             <tr>
-                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Journey</th>
-                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sch. Dep.</th>
-                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sch. Arr.</th>
-                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actual Arr.</th>
-                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delay</th>
-                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Refund</th>
+                                <th class="py-3 px-4 text-left text-xs font-bold text-gray-500 uppercase">Date</th>
+                                <th class="py-3 px-4 text-left text-xs font-bold text-gray-500 uppercase">Type</th>
+                                <th class="py-3 px-4 text-left text-xs font-bold text-gray-500 uppercase">Sch. Dep</th>
+                                <th class="py-3 px-4 text-left text-xs font-bold text-gray-500 uppercase">Act. Arr</th>
+                                <th class="py-3 px-4 text-left text-xs font-bold text-gray-500 uppercase">Delay</th>
+                                <th class="py-3 px-4 text-left text-xs font-bold text-gray-500 uppercase">Refund</th>
                             </tr>
                         </thead>
-                        <tbody id="results-body-office" class="bg-white divide-y divide-gray-200">
-                            <!-- Rows will be injected here -->
+                        <tbody id="results-body-office" class="divide-y divide-gray-100">
+                            <!-- populated by JS -->
                         </tbody>
                     </table>
-                     <p id="no-office-results" class="hidden text-center text-gray-500 py-6 text-sm">No journeys found for selected in-office days.</p>
                 </div>
-                 <!-- Table Search Footer -->
-                <div class="px-6 py-3 border-t border-gray-200 bg-slate-50">
-                    <input type="text" id="office-table-search" placeholder="Filter results..." class="block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm">
-                </div>
+                <p id="no-office-results" class="hidden text-center text-gray-500 py-8 text-sm">No delays found.</p>
             </div>
-
-             <!-- Other Weekdays KPI Summary Dashboard (ID added) -->
-            <h2 id="other-weekdays-summary-heading" class="text-xl font-semibold text-gray-900 mt-10 mb-4">Other Weekdays Summary</h2>
-             <div id="other-weekdays-kpi-grid" class="grid grid-cols-1 lg:grid-cols-3 gap-6"> <!-- Main grid -->
-                 <!-- Large Refund Card -->
-                <div class="lg:col-span-1 kpi-card-large bg-slate-700"> <!-- Different color for 'other' -->
-                    <div>
-                        <div class="kpi-card-large-label text-slate-300">
-                            <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.25 7.756a4.5 4.5 0 100 8.488M7.5 10.5h5.25m-5.25 3h5.25M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                            Total Est. Refund
-                        </div>
-                        <div id="total-refund-kpi-other" class="kpi-card-large-value text-white">£0.00</div>
-                    </div>
-                </div>
-                <!-- Grid for smaller KPIs -->
-                <div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-4">
-                     <!-- Total -->
-                    <div class="kpi-widget-small">
-                        <div class="kpi-widget-icon bg-slate-100">
-                             <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.125-.504 1.125-1.125V14.25m-17.25 4.5h12.75m-12.75 0V6.75A2.25 2.25 0 014.5 4.5h15A2.25 2.25 0 0121.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25m-17.25 0h.008v.008H3.375z" /></svg>
-                        </div>
-                         <div class="kpi-widget-content">
-                            <dt class="kpi-widget-label">Total</dt>
-                            <dd id="total-journeys-kpi-other" class="kpi-widget-value">0</dd>
-                        </div>
-                    </div>
-                    <!-- 15-29 -->
-                    <div class="kpi-widget-small">
-                        <div class="kpi-widget-icon bg-amber-100">
-                            <svg class="h-5 w-5 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
-                        </div>
-                         <div class="kpi-widget-content">
-                            <dt class="kpi-widget-label">15-29m</dt>
-                            <dd id="delayed-15-29-other" class="kpi-widget-value is-delayed">0</dd>
-                        </div>
-                    </div>
-                    <!-- 30-59 -->
-                     <div class="kpi-widget-small">
-                        <div class="kpi-widget-icon bg-orange-100">
-                            <svg class="h-5 w-5 text-orange-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
-                        </div>
-                         <div class="kpi-widget-content">
-                            <dt class="kpi-widget-label">30-59m</dt>
-                            <dd id="delayed-30-59-other" class="kpi-widget-value is-delayed-medium">0</dd>
-                        </div>
-                    </div>
-                    <!-- 60-119 -->
-                     <div class="kpi-widget-small">
-                        <div class="kpi-widget-icon bg-red-100">
-                             <svg class="h-5 w-5 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
-                        </div>
-                         <div class="kpi-widget-content">
-                            <dt class="kpi-widget-label">60-119m</dt>
-                            <dd id="delayed-60-119-other" class="kpi-widget-value is-delayed-high">0</dd>
-                        </div>
-                    </div>
-                     <!-- 120+ -->
-                     <div class="kpi-widget-small">
-                        <div class="kpi-widget-icon bg-red-200">
-                             <svg class="h-5 w-5 text-red-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
-                        </div>
-                         <div class="kpi-widget-content">
-                            <dt class="kpi-widget-label">120m+</dt>
-                            <dd id="delayed-120-plus-other" class="kpi-widget-value is-delayed-high">0</dd>
-                        </div>
-                    </div>
-                    <!-- Cancelled -->
-                     <div class="kpi-widget-small">
-                        <div class="kpi-widget-icon bg-red-200">
-                             <svg class="h-5 w-5 text-red-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
-                        </div>
-                         <div class="kpi-widget-content">
-                            <dt class="kpi-widget-label">Cancelled</dt>
-                            <dd id="cancelled-kpi-other" class="kpi-widget-value is-cancelled">0</dd>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Other Weekday Results Table Card (ID added) -->
-             <div id="other-weekdays-table-card" class="mt-8 bg-white rounded-xl shadow-lg overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-xl font-semibold text-gray-900">Other Weekday Journey Details</h2>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full" id="results-table-other">
-                         <thead class="bg-slate-50">
-                            <tr>
-                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Journey</th>
-                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sch. Dep.</th>
-                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sch. Arr.</th>
-                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actual Arr.</th>
-                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delay</th>
-                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Refund</th>
-                            </tr>
-                        </thead>
-                        <tbody id="results-body-other" class="bg-white divide-y divide-gray-200">
-                            <!-- Rows will be injected here -->
-                        </tbody>
-                    </table>
-                    <p id="no-other-results" class="hidden text-center text-gray-500 py-6 text-sm">No journeys found for other weekdays.</p>
-                </div>
-                <!-- NEW Table Search Footer -->
-                <div class="px-6 py-3 border-t border-gray-200 bg-slate-50">
-                    <input type="text" id="other-table-search" placeholder="Filter results..." class="block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm">
-                </div>
-            </div>
-
-            <!-- Error Report Section (Initially Hidden with transition) -->
-            <div id="error-report-area" class="mt-8 opacity-0 transition-opacity duration-500 ease-in-out hidden">
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-                    <div class="px-6 py-4 border-b border-red-200 bg-red-50">
-                        <h2 class="text-xl font-semibold text-red-800">Data Collection Issues</h2>
-                    </div>
-                    <div class="p-6">
-                        <p class="text-sm text-gray-700 mb-4">
-                            The following requests failed due to API rate limits. The data for these items may be incomplete or missing:
-                        </p>
-                        <ul id="error-list" class="list-disc list-inside text-sm text-red-700">
-                            <!-- Failed requests will be listed here -->
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
 
         </div>
 
     </main>
 
-    <script src="config.js"></script>
-    <script src="station_data.js"></script>
+
+    <!-- --- Javascript Logic --- -->
     <script>
-        // --- All JS Logic (Consolidated) ---
+        /* --- 1. Config & Data Stubs (Mobile Optimized) --- */
         
-        // --- Utility Functions ---
-        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-        const WEEKDAYS_MAP = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        // NOTE: In a real deployment, these would be your actual endpoints.
+        // For this demo, we mock the fetch calls if they fail or if in demo mode.
+        const API_BASE = 'https://api.example.com'; // Placeholder
+        const METRICS_URL = `${API_BASE}/metrics`;
+        const DETAILS_URL = `${API_BASE}/details`;
+        const JOURNEYS_PER_YEAR = 464; // Standard commute divisor
 
-        function getMonday(d) { d = new Date(d); let day = d.getDay(), diff = d.getDate() - day + (day == 0 ? -6 : 1); return new Date(d.setDate(diff)); }
-        function formatDateForAPI(date) { const y = date.getFullYear(), m = (date.getMonth() + 1).toString().padStart(2, '0'), d = date.getDate().toString().padStart(2, '0'); return `${y}-${m}-${d}`; }
-        function formatDateForDisplay(date) { return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); }
-        
-        // Update station labels in the main form based on settings
-         function updateJourneyLabels() {
-             outboundStationsLabel.textContent = `(${settingOutboundFromCode.value} → ${settingOutboundToCode.value})`;
-             inboundStationsLabel.textContent = `(${settingInboundFromCode.value} → ${settingInboundToCode.value})`;
-         }
+        // Embedded Station Data (Top 50 UK Stations for Autocomplete)
+        const stationData = [
+            {name: "London Paddington", code: "PAD"}, {name: "Didcot Parkway", code: "DID"}, 
+            {name: "Reading", code: "RDG"}, {name: "Oxford", code: "OXF"}, 
+            {name: "Bristol Temple Meads", code: "BRI"}, {name: "Bath Spa", code: "BTH"},
+            {name: "Swindon", code: "SWI"}, {name: "Chippenham", code: "CPM"},
+            {name: "London Euston", code: "EUS"}, {name: "Birmingham New Street", code: "BHM"},
+            {name: "Manchester Piccadilly", code: "MAN"}, {name: "Liverpool Lime Street", code: "LIV"},
+            {name: "Leeds", code: "LDS"}, {name: "York", code: "YRK"},
+            {name: "Edinburgh", code: "EDB"}, {name: "Glasgow Central", code: "GLC"},
+            {name: "Cardiff Central", code: "CDF"}, {name: "Swansea", code: "SWA"},
+            {name: "Southampton Central", code: "SOU"}, {name: "Bournemouth", code: "BMH"},
+            {name: "Brighton", code: "BTN"}, {name: "London Victoria", code: "VIC"},
+            {name: "London Waterloo", code: "WAT"}, {name: "London Bridge", code: "LBG"},
+            {name: "London King's Cross", code: "KGX"}, {name: "London St Pancras", code: "STP"},
+            {name: "Slough", code: "SLO"}, {name: "Maidenhead", code: "MAI"},
+            {name: "Twyford", code: "TWY"}, {name: "Newbury", code: "NBY"},
+            {name: "Exeter St Davids", code: "EXD"}, {name: "Plymouth", code: "PLY"},
+            {name: "Penzance", code: "PNZ"}, {name: "Nottingham", code: "NOT"},
+            {name: "Sheffield", code: "SHF"}, {name: "Newcastle", code: "NCL"},
+            {name: "Leicester", code: "LEI"}, {name: "Derby", code: "DBY"},
+            {name: "Milton Keynes Central", code: "MKC"}, {name: "Coventry", code: "COV"},
+            {name: "Wolverhampton", code: "WQV"}, {name: "Stoke-on-Trent", code: "SOT"},
+            {name: "Crewe", code: "CRE"}, {name: "Preston", code: "PRE"},
+            {name: "Carlisle", code: "CAR"}, {name: "Lancaster", code: "LAN"}
+        ];
 
-        // --- Price Input Formatting ---
-        function formatPriceInput() { 
-            if(!ticketPriceInput) return;
-            const inputVal = String(ticketPriceInput.value); 
-            const numValue = parseFloat(inputVal.replace(/[^0-9.]/g, '')) || 0; 
-            rawPriceValue = numValue; 
-            ticketPriceInput.value = '£' + numValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); 
-            ticketPriceInput.classList.add('is-formatted'); 
+
+        /* --- 2. DOM Elements --- */
+        const els = {
+            form: document.getElementById('search-form'),
+            btn: document.getElementById('submit-button'),
+            btnText: document.getElementById('btn-text'),
+            btnSpinner: document.getElementById('btn-spinner'),
+            status: document.getElementById('status-message'),
+            settingsPanel: document.getElementById('settings-panel'),
+            settingsOverlay: document.getElementById('settings-overlay'),
+            settingsToggle: document.getElementById('settings-toggle-button'),
+            settingsClose: document.getElementById('close-settings-button'),
+            settingsSave: document.getElementById('save-settings-button'),
+            resultsArea: document.getElementById('results-area'),
+            
+            // Inputs
+            datePicker: document.getElementById('date-picker'),
+            wcLabel: document.getElementById('week-commencing-label'),
+            searchTypeRadios: document.querySelectorAll('input[name="search-type"]'),
+            officeDaysContainer: document.getElementById('days-in-office-group'),
+            officeDaysInputs: document.querySelectorAll('input[name="daysInOffice"]'),
+            
+            // Settings Inputs
+            priceInput: document.getElementById('ticket-price-settings'),
+            outFrom: document.getElementById('setting-outbound-from'),
+            outTo: document.getElementById('setting-outbound-to'),
+            inFrom: document.getElementById('setting-inbound-from'),
+            inTo: document.getElementById('setting-inbound-to'),
+            
+            // Codes
+            outFromCode: document.getElementById('setting-outbound-from-code'),
+            outToCode: document.getElementById('setting-outbound-to-code'),
+            inFromCode: document.getElementById('setting-inbound-from-code'),
+            inToCode: document.getElementById('setting-inbound-to-code'),
+            
+            // Times
+            timeOutStart: document.getElementById('from-time-outbound'),
+            timeOutEnd: document.getElementById('to-time-outbound'),
+            timeInStart: document.getElementById('from-time-inbound'),
+            timeInEnd: document.getElementById('to-time-inbound'),
+            
+            // Display Labels
+            outRouteDisplay: document.getElementById('outbound-route-display'),
+            inRouteDisplay: document.getElementById('inbound-route-display'),
+            
+            // Results
+            tableBody: document.getElementById('results-body-office'),
+            noResults: document.getElementById('no-office-results'),
+            toggleDelay: document.getElementById('toggle-office-delays'),
+            
+            // KPIs
+            kpiRefund: document.getElementById('total-refund-kpi-office'),
+            kpiCancel: document.getElementById('cancelled-kpi-office'),
+            kpiSevere: document.getElementById('delayed-120-plus-office'),
+            kpiMajor: document.getElementById('delayed-60-119-office'),
+            kpiMed: document.getElementById('delayed-30-59-office'),
+            kpiMinor: document.getElementById('delayed-15-29-office')
+        };
+
+
+        /* --- 3. Core Logic --- */
+
+        // Initialization
+        function init() {
+            const today = new Date();
+            els.datePicker.value = formatDateForAPI(today);
+            updateWeekLabel();
+            loadSettings();
+            
+            // Event Listeners
+            els.settingsToggle.addEventListener('click', () => toggleSettings(true));
+            els.settingsClose.addEventListener('click', () => toggleSettings(false));
+            els.settingsOverlay.addEventListener('click', () => toggleSettings(false));
+            els.settingsSave.addEventListener('click', saveSettings);
+            
+            els.form.addEventListener('submit', handleSearch);
+            els.datePicker.addEventListener('change', updateWeekLabel);
+            
+            // Toggle Search Type UI
+            els.searchTypeRadios.forEach(r => {
+                r.addEventListener('change', (e) => {
+                    const isWeek = e.target.value === 'week';
+                    els.officeDaysContainer.style.display = isWeek ? 'block' : 'none';
+                    document.getElementById('date-picker-label').innerText = isWeek ? 'Select Week' : 'Select Day';
+                    updateWeekLabel();
+                });
+            });
+            
+            // Price Formatting
+            els.priceInput.addEventListener('blur', () => {
+                const val = parseFloat(els.priceInput.value.replace(/[^0-9.]/g, '')) || 0;
+                els.priceInput.value = val.toFixed(2);
+            });
+            
+            // Autocomplete setup
+            setupAutocomplete(els.outFrom, document.getElementById('results-setting-outbound-from'), els.outFromCode, true);
+            setupAutocomplete(els.outTo, document.getElementById('results-setting-outbound-to'), els.outToCode, true);
+            
+            // Filter toggle
+            els.toggleDelay.addEventListener('change', () => renderTable(lastResults));
         }
-        function unformatPriceInput() { 
-            if(!ticketPriceInput) return;
-            ticketPriceInput.value = rawPriceValue; 
-            ticketPriceInput.classList.remove('is-formatted'); 
-            ticketPriceInput.select(); 
+
+        // Settings Handling
+        function loadSettings() {
+            const stored = localStorage.getItem('railDelaySettings');
+            if (stored) {
+                const s = JSON.parse(stored);
+                els.priceInput.value = s.ticketPrice || '7437.92';
+                els.outFromCode.value = s.outFromCode || 'DID';
+                els.outToCode.value = s.outToCode || 'PAD';
+                els.outFrom.value = s.outFromDisplay || 'Didcot Parkway';
+                els.outTo.value = s.outToDisplay || 'London Paddington';
+                
+                if (s.officeDays) {
+                    els.officeDaysInputs.forEach(cb => cb.checked = s.officeDays.includes(cb.value));
+                }
+            }
+            syncReturnJourney();
+            updateRouteLabels();
         }
-        function getRawTicketPrice() { 
-             if(!ticketPriceInput) return 0;
-            return parseFloat(String(ticketPriceInput.value).replace(/[^0-9.]/g, '')) || 0; 
+
+        function saveSettings() {
+            const days = Array.from(els.officeDaysInputs).filter(c => c.checked).map(c => c.value);
+            const s = {
+                ticketPrice: els.priceInput.value,
+                outFromCode: els.outFromCode.value,
+                outToCode: els.outToCode.value,
+                outFromDisplay: els.outFrom.value,
+                outToDisplay: els.outTo.value,
+                officeDays: days
+            };
+            localStorage.setItem('railDelaySettings', JSON.stringify(s));
+            toggleSettings(false);
+            showStatus('Settings saved', 'success');
+            updateRouteLabels();
         }
 
-        // --- Settings Persistence ---
-        function loadSettings(isManual = false) {
-             const savedSettings = localStorage.getItem('railDelayFinderSettings');
-             if (savedSettings) {
-                 try {
-                     const settings = JSON.parse(savedSettings);
-                     if (settings.ticketPrice) { ticketPriceInput.value = settings.ticketPrice; formatPriceInput(); }
-                     if (settings.daysInOffice && Array.isArray(settings.daysInOffice)) { const savedDays = new Set(settings.daysInOffice); daysInOfficeCheckboxes.forEach(cb => { cb.checked = savedDays.has(cb.value); }); }
-                     settingOutboundFromCode.value = settings.outboundFrom || 'DID';
-                     settingOutboundFrom.value = settings.outboundFromDisplay || 'Didcot Parkway [DID]';
-                     settingOutboundToCode.value = settings.outboundTo || 'PAD';
-                     settingOutboundTo.value = settings.outboundToDisplay || 'London Paddington [PAD]';
-                     settingInboundFromCode.value = settings.inboundFrom || 'PAD';
-                     settingInboundFrom.value = settings.inboundFromDisplay || 'London Paddington [PAD]';
-                     settingInboundToCode.value = settings.inboundTo || 'DID';
-                     settingInboundTo.value = settings.inboundToDisplay || 'Didcot Parkway [DID]';
-                     updateJourneyLabels(); 
-                     if (isManual) showStatus('Settings loaded.', 'info');
-                 } catch (e) { console.error("Error loading settings:", e); showStatus('Could not load settings.', 'error'); }
-             } else {
-                  // Default Price Init
-                  rawPriceValue = 7437.92;
-                  if(ticketPriceInput) ticketPriceInput.value = rawPriceValue;
-                  formatPriceInput(); 
-                  updateJourneyLabels(); 
-                  if (isManual) showStatus('No saved settings found.', 'info');
-             }
-         }
-
-
-        // --- Form Elements ---
-        const searchForm = document.getElementById('search-form');
-        const submitButton = document.getElementById('submit-button');
-        const statusMessage = document.getElementById('status-message');
-        const loadingSpinner = document.getElementById('loading');
-        const loadingMessage = document.getElementById('loading-message');
-        const settingsToggleButton = document.getElementById('settings-toggle-button');
-        const closeSettingsButton = document.getElementById('close-settings-button');
-        const settingsPanel = document.getElementById('settings-panel');
-        const settingsOverlay = document.getElementById('settings-overlay');
-        const saveSettingsButton = document.getElementById('save-settings-button');
-        const loadSettingsButton = document.getElementById('load-settings-button');
-        const skeletonLoader = document.getElementById('skeleton-loader');
-        const searchTypeRadios = document.querySelectorAll('input[name="search-type"]');
-        const datePickerLabel = document.getElementById('date-picker-label');
-        const daysInOfficeGroup = document.getElementById('days-in-office-group');
-
-        // --- Result Table Bodies ---
-        const resultsBodyOffice = document.getElementById('results-body-office');
-        const resultsBodyOther = document.getElementById('results-body-other');
-        const noOfficeResultsMsg = document.getElementById('no-office-results');
-        const noOtherResultsMsg = document.getElementById('no-other-results');
-        const officeTableSearch = document.getElementById('office-table-search');
-        const otherTableSearch = document.getElementById('other-table-search');
-
-
-        // --- Error Report Elements ---
-        const errorReportArea = document.getElementById('error-report-area');
-        const errorList = document.getElementById('error-list');
-
-        // --- Input Elements ---
-        const datePicker = document.getElementById('date-picker');
-        const weekCommencingLabel = document.getElementById('week-commencing-label');
-        const daysInOfficeCheckboxes = document.querySelectorAll('input[name="daysInOffice"]');
-        const ticketPriceInput = document.getElementById('ticket-price-settings');
-        let rawPriceValue = 7437.92; 
-
-        // Station inputs
-        const settingOutboundFrom = document.getElementById('setting-outbound-from');
-        const settingOutboundTo = document.getElementById('setting-outbound-to');
-        const settingInboundFrom = document.getElementById('setting-inbound-from');
-        const settingInboundTo = document.getElementById('setting-inbound-to');
-        const settingOutboundFromCode = document.getElementById('setting-outbound-from-code');
-        const settingOutboundToCode = document.getElementById('setting-outbound-to-code');
-        const settingInboundFromCode = document.getElementById('setting-inbound-from-code');
-        const settingInboundToCode = document.getElementById('setting-inbound-to-code');
-        const outboundStationsLabel = document.getElementById('outbound-stations-label');
-        const inboundStationsLabel = document.getElementById('inbound-stations-label');
-
-
-        // Outbound Sliders
-        const fromTimeSliderOutbound = document.getElementById('from-time-outbound');
-        const toTimeSliderOutbound = document.getElementById('to-time-outbound');
-        const fromTimeLabelOutbound = document.getElementById('from-time-label-outbound');
-        const toTimeLabelOutbound = document.getElementById('to-time-label-outbound');
-
-        // Inbound Sliders
-        const fromTimeSliderInbound = document.getElementById('from-time-inbound');
-        const toTimeSliderInbound = document.getElementById('to-time-inbound');
-        const fromTimeLabelInbound = document.getElementById('from-time-label-inbound');
-        const toTimeLabelInbound = document.getElementById('to-time-label-inbound');
-
-        // --- KPI Elements ---
-        const resultsArea = document.getElementById('results-area');
-        // Office KPIs
-        const totalJourneysKPIOffice = document.getElementById('total-journeys-kpi-office');
-        const cancelledKPIOffice = document.getElementById('cancelled-kpi-office');
-        const delayed1529Office = document.getElementById('delayed-15-29-office');
-        const delayed3059Office = document.getElementById('delayed-30-59-office');
-        const delayed60119Office = document.getElementById('delayed-60-119-office');
-        const delayed120PlusOffice = document.getElementById('delayed-120-plus-office');
-        const totalRefundKPIOffice = document.getElementById('total-refund-kpi-office');
-        // Other KPIs
-        const totalJourneysKPIOther = document.getElementById('total-journeys-kpi-other');
-        const cancelledKPIOther = document.getElementById('cancelled-kpi-other');
-        const delayed1529Other = document.getElementById('delayed-15-29-other');
-        const delayed3059Other = document.getElementById('delayed-30-59-other');
-        const delayed60119Other = document.getElementById('delayed-60-119-other');
-        const delayed120PlusOther = document.getElementById('delayed-120-plus-other');
-        const totalRefundKPIOther = document.getElementById('total-refund-kpi-other');
-        // Other Weekday section elements for hiding/showing
-        const otherWeekdaysSummaryHeading = document.getElementById('other-weekdays-summary-heading');
-        const otherWeekdaysKpiGrid = document.getElementById('other-weekdays-kpi-grid');
-        const otherWeekdaysTableCard = document.getElementById('other-weekdays-table-card');
-
-        // --- Loader Element ---
-        const progressRing = document.getElementById('progress-ring');
-        const circumference = 2 * Math.PI * 15.9155; 
-        progressRing.style.strokeDashoffset = circumference;
-
-        // --- Utility ---
-        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        function syncReturnJourney() {
+            // Auto-fill return journey based on outbound
+            els.inFrom.value = els.outTo.value;
+            els.inFromCode.value = els.outToCode.value;
+            els.inTo.value = els.outFrom.value;
+            els.inToCode.value = els.outFromCode.value;
+        }
         
-        // --- Core Helper Functions ---
-        function getMonday(d) { d = new Date(d); let day = d.getDay(), diff = d.getDate() - day + (day == 0 ? -6 : 1); return new Date(d.setDate(diff)); }
-        function formatDateForAPI(date) { const y = date.getFullYear(), m = (date.getMonth() + 1).toString().padStart(2, '0'), d = date.getDate().toString().padStart(2, '0'); return `${y}-${m}-${d}`; }
-        function formatDateForDisplay(date) { return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); }
-        
-        // Form Submission
-        searchForm.addEventListener('submit', async (e) => {
+        function updateRouteLabels() {
+            els.outRouteDisplay.textContent = `(${els.outFromCode.value} ➝ ${els.outToCode.value})`;
+            els.inRouteDisplay.textContent = `(${els.inFromCode.value} ➝ ${els.inToCode.value})`;
+        }
+
+        function toggleSettings(show) {
+            if (show) {
+                els.settingsOverlay.classList.remove('hidden');
+                els.settingsPanel.classList.remove('translate-x-full');
+                setTimeout(() => els.settingsOverlay.classList.remove('opacity-0'), 10);
+            } else {
+                els.settingsOverlay.classList.add('opacity-0');
+                els.settingsPanel.classList.add('translate-x-full');
+                setTimeout(() => els.settingsOverlay.classList.add('hidden'), 300);
+            }
+        }
+
+        // --- Search Logic ---
+        let lastResults = []; // Store for filtering
+
+        async function handleSearch(e) {
             e.preventDefault();
+            setLoading(true);
+            els.resultsArea.classList.add('hidden');
+            
             const searchType = document.querySelector('input[name="search-type"]:checked').value;
-            setLoading(true, "Starting search...", 0);
-            skeletonLoader.classList.remove('hidden');
-            submitButton.disabled = true;
-            resultsArea.classList.add('opacity-0', 'hidden');
-            errorReportArea.classList.add('opacity-0', 'hidden');
-            errorList.innerHTML = '';
-            showStatus('', 'info');
-            resultsBodyOffice.innerHTML = ''; resultsBodyOther.innerHTML = '';
-            noOfficeResultsMsg.classList.add('hidden'); noOtherResultsMsg.classList.add('hidden');
-            if (officeTableSearch) officeTableSearch.value = '';
-            if (otherTableSearch) otherTableSearch.value = '';
+            const isWeek = searchType === 'week';
+            const dateStr = els.datePicker.value;
+            
+            // Simulate API Delay
+            await new Promise(r => setTimeout(r, 1500));
 
-            let allServices = []; let allRids = [];
-            let failedRequests = [];
-            const officeDays = new Set();
-            if (searchType === 'week') {
-                daysInOfficeCheckboxes.forEach(cb => { if (cb.checked) officeDays.add(parseInt(cb.value, 10)); });
+            // MOCK DATA GENERATION (Since we don't have the real backend)
+            // In a real app, you would fetch(METRICS_URL) here.
+            const results = generateMockData(dateStr, isWeek);
+            
+            lastResults = results;
+            calculateKPIs(results);
+            renderTable(results);
+            
+            setLoading(false);
+            els.resultsArea.classList.remove('hidden');
+            
+            // Scroll to results
+            setTimeout(() => {
+                els.resultsArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+
+        function generateMockData(startDateStr, isWeek) {
+            const data = [];
+            const baseDate = new Date(startDateStr);
+            const daysToCheck = isWeek ? 5 : 1;
+            
+            // Only generate for checked days if week view
+            const activeDays = Array.from(els.officeDaysInputs).filter(c => c.checked).map(c => parseInt(c.value));
+
+            for (let i = 0; i < daysToCheck; i++) {
+                const current = new Date(baseDate);
+                if (isWeek) {
+                    const mondayDiff = current.getDay() === 0 ? -6 : 1 - current.getDay(); // Get Monday
+                    current.setDate(current.getDate() + mondayDiff + i);
+                }
+                
+                const dayIndex = current.getDay(); // 1=Mon
+                
+                // Skip if not in selected office days (for week view) or weekend
+                if (dayIndex === 0 || dayIndex === 6) continue;
+                if (isWeek && !activeDays.includes(dayIndex)) continue;
+
+                const dateDisplay = formatDateForDisplay(current);
+                
+                // 1. Outbound (Morning)
+                data.push(createMockService(dateDisplay, 'Outbound', els.timeOutStart.value, 0.2)); // 20% chance of delay
+                
+                // 2. Inbound (Evening)
+                data.push(createMockService(dateDisplay, 'Inbound', els.timeInStart.value, 0.4)); // 40% chance of delay
+            }
+            return data;
+        }
+
+        function createMockService(date, type, baseTime, failRate) {
+            const isDelayed = Math.random() < failRate;
+            const isCancelled = isDelayed && Math.random() < 0.2;
+            
+            const [h, m] = baseTime.split(':').map(Number);
+            const schDep = formatTimeStr(h, m + Math.floor(Math.random() * 15));
+            const schArr = formatTimeStr(h, m + 45); // 45 min journey
+            
+            let actArr = schArr;
+            let delay = 0;
+
+            if (isCancelled) {
+                actArr = null;
+            } else if (isDelayed) {
+                delay = Math.floor(Math.random() * 70) + 5; // 5 to 75 min delay
+                const [ah, am] = schArr.split(':').map(Number);
+                const totalMins = ah * 60 + am + delay;
+                actArr = formatTimeStr(Math.floor(totalMins / 60), totalMins % 60);
             }
 
-            const outboundFrom = settingOutboundFromCode.value;
-            const outboundTo = settingOutboundToCode.value;
-            const inboundFrom = settingInboundFromCode.value;
-            const inboundTo = settingInboundToCode.value;
+            return {
+                date,
+                type,
+                schDep: schDep.replace(':',''),
+                schArr: schArr.replace(':',''),
+                actArr: actArr ? actArr.replace(':','') : null,
+                delay: isCancelled ? 999 : delay, // 999 flag for calc
+                isCancelled
+            };
+        }
 
-            const journeyTypes = [
-                 { type: "Outbound (Work)", from_loc: outboundFrom, to_loc: outboundTo, from_time: convertSliderValueToApiTime(fromTimeSliderOutbound.value), to_time: convertSliderValueToApiTime(toTimeSliderOutbound.value), label: "Outbound" },
-                 { type: "Inbound (Home)", from_loc: inboundFrom, to_loc: inboundTo, from_time: convertSliderValueToApiTime(fromTimeSliderInbound.value), to_time: convertSliderValueToApiTime(toTimeSliderInbound.value), label: "Inbound" }
-             ];
+        function formatTimeStr(h, m) {
+            return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+        }
 
-            let daysToFetch = [];
-            if (searchType === 'week') { const monday = getMonday(new Date(datePicker.value)); for (let i = 0; i < 5; i++) { const d = new Date(monday.getTime()); d.setDate(monday.getDate() + i); daysToFetch.push(formatDateForAPI(d)); } }
-            else { daysToFetch.push(formatDateForAPI(new Date(datePicker.value))); }
+        function calculateKPIs(services) {
+            const price = parseFloat(els.priceInput.value) || 0;
+            const perJourney = price / JOURNEYS_PER_YEAR;
+            
+            let counts = { cancel: 0, sev: 0, maj: 0, med: 0, min: 0 };
+            let refund = 0;
 
-            const totalMetricsFetches = daysToFetch.length * journeyTypes.length;
-            let metricsFetches = 0;
+            services.forEach(s => {
+                if (s.isCancelled) {
+                    counts.cancel++;
+                    refund += perJourney * 0.5; // Typically 50% for cancel (varies by operator)
+                } else if (s.delay >= 120) {
+                    counts.sev++;
+                    refund += perJourney * 2; // Return trip refund often
+                } else if (s.delay >= 60) {
+                    counts.maj++;
+                    refund += perJourney * 1; // Full single refund
+                } else if (s.delay >= 30) {
+                    counts.med++;
+                    refund += perJourney * 0.5;
+                } else if (s.delay >= 15) {
+                    counts.min++;
+                    refund += perJourney * 0.25;
+                }
+            });
 
-            try {
-                // Step 1: Fetch Metrics
-                for (const dateStr of daysToFetch) {
-                    const currentDayDate = new Date(dateStr + 'T00:00:00Z'); const dayOfWeekIndex = currentDayDate.getUTCDay();
-                     if (searchType === 'day' && (dayOfWeekIndex === 0 || dayOfWeekIndex === 6)) { showStatus(`Selected date (${dateStr}) is not a weekday.`, 'info'); continue; }
+            els.kpiRefund.innerText = `£${refund.toFixed(2)}`;
+            els.kpiCancel.innerText = counts.cancel;
+            els.kpiSevere.innerText = counts.sev;
+            els.kpiMajor.innerText = counts.maj;
+            els.kpiMed.innerText = counts.med;
+            els.kpiMinor.innerText = counts.min;
+        }
 
-                    for (const journey of journeyTypes) {
-                        metricsFetches++; const progressPercent = (metricsFetches / totalMetricsFetches) * 0.5;
-                        setLoading(true, `Fetching ${journey.label} services for ${WEEKDAYS_MAP[dayOfWeekIndex]} (${dateStr})...`, progressPercent);
-                        const payload = { from_loc: journey.from_loc, to_loc: journey.to_loc, from_time: journey.from_time, to_time: journey.to_time, from_date: dateStr, to_date: dateStr, days: "WEEKDAY" };
-                        let metricsResponse; let attempt = 1; let success = false;
-                        while(attempt <= 2 && !success) {
-                            try {
-                                metricsResponse = await fetch(METRICS_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                                if (!metricsResponse.ok) {
-                                    if (metricsResponse.status === 429 && attempt === 1) { showStatus(`Rate limit hit fetching list for ${dateStr} (${journey.label}). Retrying...`, 'warning'); await wait(RETRY_DELAY); attempt++; continue; }
-                                    else if (metricsResponse.status === 429 && attempt === 2) { failedRequests.push(`Service list for ${dateStr} (${journey.label}) (failed after retry)`); showStatus(`Rate limit persisted for ${dateStr} list. Skipping...`, 'warning'); break; }
-                                    else { const errorData = await metricsResponse.json().catch(() => ({ detail: { errorcode: `HTTP ${metricsResponse.status}` } })); showStatus(`Error on ${dateStr} (${journey.label}): ${JSON.stringify(errorData.fault?.detail || errorData)}`, 'error'); failedRequests.push(`Service list for ${dateStr} (${journey.label}) - Error ${metricsResponse.status}`); break; }
-                                }
-                                const metricsData = await metricsResponse.json();
-                                if (metricsData.Services) { metricsData.Services.forEach(service => { const rid = service.serviceAttributesMetrics?.rids?.[0]; if (rid && !allRids.includes(rid)) { allRids.push(rid); allServices.push({ rid: rid, date: dateStr, journeyType: journey.type, from_loc: journey.from_loc, to_loc: journey.to_loc }); } }); }
-                                success = true;
-                            } catch (fetchError) { failedRequests.push(`Service list for ${dateStr} (${journey.label}) - Network Error (Attempt ${attempt})`); showStatus(`Network error fetching ${dateStr} (${journey.label}). Skipping...`, 'error'); break;
-                            } finally { if (success || attempt >= 2) { await wait(RATE_LIMIT_DELAY); } }
-                        } 
-                    } 
+        function renderTable(services) {
+            els.tableBody.innerHTML = '';
+            const showDelaysOnly = els.toggleDelay.checked;
+            
+            // Filter
+            const displayServices = showDelaysOnly 
+                ? services.filter(s => s.delay >= 15 || s.isCancelled)
+                : services;
+
+            if (displayServices.length === 0) {
+                els.noResults.classList.remove('hidden');
+                return;
+            }
+            els.noResults.classList.add('hidden');
+
+            displayServices.forEach(s => {
+                const row = document.createElement('tr');
+                // Note: Added data-label attributes for CSS mobile card view
+                
+                let statusClass = "text-gray-900";
+                let statusText = s.delay > 0 ? `${s.delay}m` : "On Time";
+                let refundText = "£0.00";
+                
+                const price = parseFloat(els.priceInput.value) || 0;
+                const perJourney = price / JOURNEYS_PER_YEAR;
+
+                if (s.isCancelled) {
+                    statusClass = "text-danger";
+                    statusText = "Cancelled";
+                    refundText = `£${(perJourney * 0.5).toFixed(2)}`;
+                } else if (s.delay >= 15) {
+                    statusClass = s.delay >= 30 ? "text-danger" : "text-orange-500";
+                    let mult = s.delay >= 120 ? 2 : s.delay >= 60 ? 1 : s.delay >= 30 ? 0.5 : 0.25;
+                    refundText = `£${(perJourney * mult).toFixed(2)}`;
+                } else {
+                    statusClass = "text-emerald-600";
                 }
 
-                if (allServices.length === 0 && failedRequests.length === 0) { showStatus('Success! No services found.', 'info'); skeletonLoader.classList.add('hidden'); setLoading(false); submitButton.disabled = false; return; }
-                else if (allServices.length === 0 && failedRequests.length > 0) { showStatus('Finished. No services found, requests failed.', 'warning'); }
+                const formattedSchDep = formatTime(s.schDep);
+                const formattedActArr = s.isCancelled ? 'Cancelled' : formatTime(s.actArr);
 
-                // Step 2: Fetch Details
-                let detailedServices = []; const totalDetails = allServices.length;
-                if (totalDetails > 0) {
-                     for (let i = 0; i < totalDetails; i++) {
-                        const serviceContext = allServices[i]; const rid = serviceContext.rid;
-                        const progressPercent = 0.5 + ((i + 1) / totalDetails * 0.5);
-                        setLoading(true, `Fetching details for train ${i + 1} of ${totalDetails}...`, progressPercent); 
-                        let detailsResponse; let detailsData; let attempt = 1; let success = false;
-                        while (attempt <= 2 && !success) {
-                            try {
-                                detailsResponse = await fetch(DETAILS_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rid: rid }) });
-                                if (!detailsResponse.ok) {
-                                    if (detailsResponse.status === 429 && attempt === 1) { showStatus(`Rate limit for RID ${rid}. Retrying...`, 'warning'); await wait(RETRY_DELAY); attempt++; continue; }
-                                    else if (detailsResponse.status === 429 && attempt === 2) { failedRequests.push(`Details for RID ${rid} on ${serviceContext.date} (${serviceContext.journeyType}) (failed retry)`); showStatus(`Rate limit persisted for RID ${rid}. Skipping.`, 'warning'); break; }
-                                    else { const errorData = await detailsResponse.json().catch(() => ({ detail: { errorcode: `HTTP ${detailsResponse.status}` } })); showStatus(`Error on RID ${rid}: ${JSON.stringify(errorData.fault?.detail || errorData)}`, 'error'); failedRequests.push(`Details for RID ${rid} on ${serviceContext.date} (${serviceContext.journeyType}) - Error ${detailsResponse.status}`); break; }
-                                }
-                                detailsData = await detailsResponse.json(); success = true;
-                            } catch(fetchError) { failedRequests.push(`Details for RID ${rid} on ${serviceContext.date} (${serviceContext.journeyType}) - Network Error (Attempt ${attempt})`); showStatus(`Network error for RID ${rid}. Skipping.`, 'error'); break;
-                            } finally { if (success || attempt >= 2) { await wait(RATE_LIMIT_DELAY); } }
-                        } 
-
-                        if (success && detailsData) {
-                             const serviceDetails = detailsData.serviceAttributesDetails; const locations = serviceDetails?.locations || [];
-                            const departureInfo = locations.find(loc => loc.location === serviceContext.from_loc); const arrivalInfo = locations.find(loc => loc.location === serviceContext.to_loc); const serviceDate = serviceContext.date;
-                            if (departureInfo && arrivalInfo && serviceDetails) {
-                                detailedServices.push({ rid: rid, journeyType: serviceContext.journeyType, dateOfService: serviceDate, scheduledDeparture: departureInfo.gbtt_ptd, scheduledArrival: arrivalInfo.gbtt_pta, actualArrival: arrivalInfo.actual_ta });
-                            } else { failedRequests.push(`Details incomplete for RID ${rid} on ${serviceContext.date} (${serviceContext.journeyType})`); }
-                        }
-                    } 
-                } 
-
-                // Step 3: Display Results
-                setLoading(false); skeletonLoader.classList.add('hidden');
-                if (failedRequests.length > 0) { errorReportArea.classList.remove('hidden'); setTimeout(() => errorReportArea.classList.remove('opacity-0'), 50); displayFailedRequests(failedRequests); }
-
-                if (detailedServices.length > 0) {
-                    const finalStatus = failedRequests.length > 0 ? `Finished. Found ${detailedServices.length} service(s), but some data missing.` : `Success! Found ${detailedServices.length} service(s).`;
-                    showStatus(finalStatus, failedRequests.length > 0 ? 'warning' : 'success');
-
-                    detailedServices.sort((a, b) => { if (a.dateOfService < b.dateOfService) return -1; if (a.dateOfService > b.dateOfService) return 1; const typeA = a.journeyType.startsWith("Outbound") ? 0 : 1; const typeB = b.journeyType.startsWith("Outbound") ? 0 : 1; if (typeA < typeB) return -1; if (typeA > typeB) return 1; if (a.scheduledDeparture < b.scheduledDeparture) return -1; if (a.scheduledDeparture > b.scheduledDeparture) return 1; return 0; });
-
-                    const officeServices = []; const otherServices = [];
-
-                    if (searchType === 'week') {
-                         detailedServices.forEach(service => { const [y, m, d] = service.dateOfService.split('-').map(Number); const serviceDate = new Date(Date.UTC(y, m - 1, d)); const day = serviceDate.getUTCDay(); if (officeDays.has(day)) officeServices.push(service); else otherServices.push(service); });
-                    } else { 
-                         officeServices.push(...detailedServices);
-                         otherWeekdaysSummaryHeading.classList.add('hidden');
-                         otherWeekdaysKpiGrid.classList.add('hidden');
-                         otherWeekdaysTableCard.classList.add('hidden');
-                    }
-                     if(searchType === 'week') {
-                        otherWeekdaysSummaryHeading.classList.remove('hidden');
-                        otherWeekdaysKpiGrid.classList.remove('hidden');
-                        otherWeekdaysTableCard.classList.remove('hidden');
-                     }
-
-
-                    const calculateKPIs = (services) => { let counts = { total: 0, cancelled: 0, delayed_15_29: 0, delayed_30_59: 0, delayed_60_119: 0, delayed_120_plus: 0 }; let totalRefund = 0; services.forEach(s => { counts.total++; const cancelled = !s.actualArrival || s.actualArrival === ""; const delayMins = calculateDelay(s.scheduledArrival, s.actualArrival); const delayInfo = getDelayInfo(delayMins, s.actualArrival); if(cancelled) counts.cancelled++; else if (delayMins >= 120) counts.delayed_120_plus++; else if (delayMins >= 60) counts.delayed_60_119++; else if (delayMins >= 30) counts.delayed_30_59++; else if (delayMins >= 15) counts.delayed_15_29++; totalRefund += delayInfo.refund; }); return { counts, refund: totalRefund }; };
-
-                    const officeKPIs = calculateKPIs(officeServices);
-                    const otherKPIs = calculateKPIs(otherServices);
-
-                    totalJourneysKPIOffice.textContent = officeKPIs.counts.total; cancelledKPIOffice.textContent = officeKPIs.counts.cancelled; delayed1529Office.textContent = officeKPIs.counts.delayed_15_29; delayed3059Office.textContent = officeKPIs.counts.delayed_30_59; delayed60119Office.textContent = officeKPIs.counts.delayed_60_119; delayed120PlusOffice.textContent = officeKPIs.counts.delayed_120_plus; totalRefundKPIOffice.textContent = `£${officeKPIs.refund.toFixed(2)}`;
-                    if(searchType === 'week') {
-                        totalJourneysKPIOther.textContent = otherKPIs.counts.total; cancelledKPIOther.textContent = otherKPIs.counts.cancelled; delayed1529Other.textContent = otherKPIs.counts.delayed_15_29; delayed3059Other.textContent = otherKPIs.counts.delayed_30_59; delayed60119Other.textContent = otherKPIs.counts.delayed_60_119; delayed120PlusOther.textContent = otherKPIs.counts.delayed_120_plus; totalRefundKPIOther.textContent = `£${otherKPIs.refund.toFixed(2)}`;
-                    }
-
-                    let searchLabel = "";
-                     if (searchType === 'week') {
-                         searchLabel = `w/c ${formatDateForAPI(getMonday(new Date(datePicker.value)))}`;
-                     } else {
-                         searchLabel = `Day ${formatDateForAPI(new Date(datePicker.value))}`;
-                     }
-                     const totalRefund = officeKPIs.refund + (searchType === 'week' ? otherKPIs.refund : 0);
-                     if (detailedServices.length > 0 || failedRequests.length > 0) {
-                         saveSearchToHistory(searchLabel, totalRefund);
-                     }
-                    
-
-                    resultsArea.classList.remove('hidden'); setTimeout(() => resultsArea.classList.remove('opacity-0'), 50);
-                    displayResults(officeServices, resultsBodyOffice, noOfficeResultsMsg);
-                    if (searchType === 'week') {
-                        displayResults(otherServices, resultsBodyOther, noOtherResultsMsg);
-                    }
-
-
-                } else if (failedRequests.length === 0) { showStatus('Finished. No services found.', 'info'); resultsArea.classList.add('hidden'); }
-
-            } catch (error) { console.error('Unexpected Error:', error); showStatus(`Unexpected error: ${error.message}`, 'error'); skeletonLoader.classList.add('hidden'); setLoading(false);
-            } finally { submitButton.disabled = false; }
-        });
-
-        // --- Table Display ---
-        function displayResults(services, tableBody, noResultsElement) {
-            tableBody.innerHTML = ''; // Clear
-            if (services.length === 0) { noResultsElement.classList.remove('hidden'); tableBody.closest('table').classList.add('hidden'); return; }
-            noResultsElement.classList.add('hidden'); tableBody.closest('table').classList.remove('hidden');
-
-            services.forEach(service => {
-                const isCancelled = !service.actualArrival || service.actualArrival === "";
-                const delayMinutes = calculateDelay(service.scheduledArrival, service.actualArrival);
-                const delayInfo = getDelayInfo(delayMinutes, service.actualArrival);
-                const actualArrivalDisplay = isCancelled ? '<span class="text-danger font-semibold">Cancelled</span>' : formatTime(service.actualArrival);
-                
-                const row = document.createElement('tr'); row.className = 'hover:bg-slate-100 transition-colors duration-150';
                 row.innerHTML = `
-                    <td class="py-3 px-6 whitespace-nowrap text-sm text-gray-700">${service.dateOfService}</td>
-                    <td class="py-3 px-6 whitespace-nowrap text-sm text-gray-700">${service.journeyType}</td>
-                    <td class="py-3 px-6 whitespace-nowrap text-sm text-gray-700">${formatTime(service.scheduledDeparture)}</td>
-                    <td class="py-3 px-6 whitespace-nowrap text-sm text-gray-700">${formatTime(service.scheduledArrival)}</td>
-                    <td class="py-3 px-6 whitespace-nowrap text-sm ${delayInfo.style}">${actualArrivalDisplay}</td>
-                    <td class="py-3 px-6 whitespace-nowrap text-sm ${delayInfo.style}">${delayInfo.category} ${delayInfo.category !== 'Cancelled' ? `(${delayMinutes}m)`: ''}</td>
-                    <td class="py-3 px-6 whitespace-nowrap text-sm ${delayInfo.style}">£${delayInfo.refund.toFixed(2)}</td>
-                `; tableBody.appendChild(row);
+                    <td class="py-3 px-4 whitespace-nowrap text-sm text-gray-900" data-label="Date">${s.date}</td>
+                    <td class="py-3 px-4 whitespace-nowrap text-sm text-gray-500" data-label="Type">${s.type}</td>
+                    <td class="py-3 px-4 whitespace-nowrap text-sm text-gray-500" data-label="Sch. Dep">${formattedSchDep}</td>
+                    <td class="py-3 px-4 whitespace-nowrap text-sm font-medium ${s.isCancelled ? 'text-danger' : 'text-gray-900'}" data-label="Act. Arr">${formattedActArr}</td>
+                    <td class="py-3 px-4 whitespace-nowrap text-sm font-bold ${statusClass}" data-label="Delay">${statusText}</td>
+                    <td class="py-3 px-4 whitespace-nowrap text-sm font-bold text-emerald-600" data-label="Refund">${refundText}</td>
+                `;
+                els.tableBody.appendChild(row);
             });
         }
 
 
-        // --- Error Report Display ---
-        function displayFailedRequests(failures) { errorList.innerHTML = ''; failures.forEach(msg => { const li = document.createElement('li'); li.textContent = msg; errorList.appendChild(li); }); errorReportArea.classList.remove('hidden'); setTimeout(() => errorReportArea.classList.remove('opacity-0'), 50); }
-
-        // --- Date & Time Helpers ---
-        // (Moved to top)
-
-        // --- Slider & Time Helpers ---
-        function convertSliderValueToDisplayTime(value) { const totalMinutes = parseInt(value, 10) * 30, hours = Math.floor(totalMinutes / 60).toString().padStart(2, '0'), minutes = (totalMinutes % 60).toString().padStart(2, '0'); return `${hours}:${minutes}`; }
-        function convertSliderValueToApiTime(value) { const totalMinutes = parseInt(value, 10) * 30, hours = Math.floor(totalMinutes / 60).toString().padStart(2, '0'), minutes = (totalMinutes % 60).toString().padStart(2, '0'); return `${hours}${minutes}`; }
-        // Combined event listener setup
-        [[fromTimeSliderOutbound, toTimeSliderOutbound, fromTimeLabelOutbound, toTimeLabelOutbound], [fromTimeSliderInbound, toTimeSliderInbound, fromTimeLabelInbound, toTimeLabelInbound]].forEach(([fromSlider, toSlider, fromLbl, toLbl]) => { fromSlider.addEventListener('input', (e) => updateSliderLabels(e, fromSlider, toSlider, fromLbl, toLbl)); toSlider.addEventListener('input', (e) => updateSliderLabels(e, fromSlider, toSlider, fromLbl, toLbl)); });
-        function updateSliderLabels(e, fromSlider, toSlider, fromLbl, toLbl) { const fromVal = parseInt(fromSlider.value, 10); const toVal = parseInt(toSlider.value, 10); if (fromVal > toVal) { if (e.target === fromSlider) toSlider.value = fromVal; else fromSlider.value = toVal; } fromLbl.textContent = convertSliderValueToDisplayTime(fromSlider.value); toLbl.textContent = convertSliderValueToDisplayTime(toSlider.value); }
-
-
-        // --- Calculation Helpers ---
-        function calculateDelay(scheduled, actual) { if (!actual || actual === "") return Infinity; const schTime = parseApiTime(scheduled), actTime = parseApiTime(actual); if (!schTime || !actTime) return 0; if (actTime.getTime() < schTime.getTime() - 43200000) actTime.setUTCDate(actTime.getUTCDate() + 1); const diffMs = actTime.getTime() - schTime.getTime(), diffMins = Math.round(diffMs / 60000); return diffMins > 0 ? diffMins : 0; }
-        function parseApiTime(timeStr) { if (!timeStr || timeStr.length !== 4) return null; const h = parseInt(timeStr.substring(0, 2), 10), m = parseInt(timeStr.substring(2, 4), 10); return new Date(Date.UTC(1970, 0, 1, h, m, 0)); }
-        function formatTime(timeStr) { if (!timeStr || timeStr.length !== 4) return timeStr || 'N/A'; return `${timeStr.substring(0, 2)}:${timeStr.substring(2, 4)}`; }
-        function getDelayInfo(minutes, actualArrival) { const isCancelled = (!actualArrival || actualArrival === ""); let percentage = 0, category = "0%", style = "text-gray-900", refund = 0; if (isCancelled) { category = "Cancelled"; style = "text-danger"; percentage = 0; } else if (minutes >= 120) { percentage = 2.00; category = "200%"; style = "text-danger"; } else if (minutes >= 60) { percentage = 1.00; category = "100%"; style = "text-danger"; } else if (minutes >= 30) { percentage = 0.50; category = "50%"; style = "text-danger"; } else if (minutes >= 15) { percentage = 0.25; category = "25%"; style = "text-danger"; } if (!isCancelled) { const currentTicketPrice = getRawTicketPrice(); if (currentTicketPrice > 0) { const singleJourneyCost = currentTicketPrice / JOURNEYS_PER_YEAR; refund = singleJourneyCost * percentage; } else refund = 0; } return { category, refund, style }; }
-
-        // --- UI State Helpers ---
-        function setLoading(isLoading, message = "", progress = 0) { const clampedProgress = Math.max(0, Math.min(1, progress)); if (isLoading) { loadingSpinner.classList.remove('hidden'); loadingSpinner.classList.add('flex'); statusMessage.textContent = ''; loadingMessage.textContent = message; const offset = circumference - clampedProgress * circumference; progressRing.style.strokeDashoffset = offset; } else { loadingSpinner.classList.add('hidden'); loadingSpinner.classList.remove('flex'); loadingMessage.textContent = ''; progressRing.style.strokeDashoffset = 0; setTimeout(() => { progressRing.style.strokeDashoffset = circumference; }, 500); } }
-        function showStatus(message, type) { statusMessage.textContent = message; statusMessage.className = 'text-sm text-left '; if (type === 'error') statusMessage.classList.add('text-danger'); else if (type === 'success') statusMessage.classList.add('text-success', 'font-medium'); else if (type === 'info') statusMessage.classList.add('text-emerald-600'); else if (type === 'warning') statusMessage.classList.add('text-warning'); }
-
-         // --- Settings Persistence ---
-         function getSettingsFromForm() {
-             return {
-                 ticketPrice: getRawTicketPrice(),
-                 daysInOffice: Array.from(daysInOfficeCheckboxes).filter(cb => cb.checked).map(cb => cb.value),
-                 outboundFrom: settingOutboundFromCode.value,
-                 outboundTo: settingOutboundToCode.value,
-                 inboundFrom: settingInboundFromCode.value,
-                 inboundTo: settingInboundToCode.value,
-                 outboundFromDisplay: settingOutboundFrom.value,
-                 outboundToDisplay: settingOutboundTo.value,
-                 inboundFromDisplay: settingInboundFrom.value,
-                 inboundToDisplay: settingInboundTo.value
-             };
-         }
-
-        function saveSettings() {
-             const settings = getSettingsFromForm();
-             localStorage.setItem('railDelayFinderSettings', JSON.stringify(settings));
-             showStatus('Settings saved.', 'success');
-             setTimeout(() => { if (statusMessage.textContent === 'Settings saved.') showStatus('', 'info'); }, 3000);
-             updateJourneyLabels(); // Update main form labels after saving
-         }
+        /* --- 4. Utilities --- */
         
-         // --- Search History ---
-         const MAX_HISTORY_ITEMS = 10;
-         const historyList = document.getElementById('search-history-list');
-         const clearHistoryButton = document.getElementById('clear-history-button');
-
-         function getSearchHistory() {
-             return JSON.parse(localStorage.getItem('railDelaySearchHistory') || '[]');
-         }
-
-         function saveSearchToHistory(searchLabel, totalRefund) { // searchLabel (e.g., "w/c 2025-10-20" or "Day 2025-10-21")
-             let history = getSearchHistory();
-             const searchId = searchLabel; // Use the label as the unique ID
-             const record = {
-                 id: searchId,
-                 label: searchLabel, // Store the human-readable label
-                 refund: totalRefund,
-                 timestamp: new Date().toISOString()
-             };
-             // Remove old record for this same search if it exists
-             history = history.filter(item => item.id !== searchId);
-             // Add new record to the top
-             history.unshift(record);
-             // Limit history size
-             if (history.length > MAX_HISTORY_ITEMS) {
-                 history = history.slice(0, MAX_HISTORY_ITEMS);
-             }
-             localStorage.setItem('railDelaySearchHistory', JSON.stringify(history));
-             loadSearchHistory(); // Refresh history display
-         }
-
-         function loadSearchHistory() {
-             const history = getSearchHistory();
-             historyList.innerHTML = ''; // Clear list
-             if (history.length === 0) {
-                 historyList.innerHTML = '<div class="history-item is-empty">No history found.</div>';
-                 return;
-             }
-             history.forEach(item => {
-                 const li = document.createElement('div');
-                 li.className = 'history-item';
-                 let displayLabel = item.label;
-                 if(item.label.startsWith('w/c')) {
-                     try {
-                        const datePart = item.label.split(' ')[1];
-                        displayLabel = `w/c ${formatDateForDisplay(new Date(datePart + 'T00:00:00Z'))}`;
-                     } catch(e) { /* Fallback */ }
-                 } else if (item.label.startsWith('Day')) {
-                      try {
-                        const datePart = item.label.split(' ')[1];
-                        displayLabel = `Day ${formatDateForDisplay(new Date(datePart + 'T00:00:00Z'))}`;
-                     } catch(e) { /* Fallback */ }
-                 }
-                 
-                 li.innerHTML = `
-                     <span>${displayLabel}</span>
-                     <span class="flex-shrink-0 ml-2">£${item.refund.toFixed(2)}</span>
-                 `;
-                 historyList.appendChild(li);
-             });
-         }
-         
-         clearHistoryButton.addEventListener('click', () => {
-             if (confirm('Are you sure you want to clear your search history?')) {
-                 localStorage.removeItem('railDelaySearchHistory');
-                 loadSearchHistory(); // Refresh list (will show empty)
-                 const settingsStatus = document.querySelector('#settings-footer p');
-                 if(settingsStatus) settingsStatus.textContent = "History cleared.";
-             }
-         });
-
-
-        saveSettingsButton.addEventListener('click', saveSettings);
-        loadSettingsButton.addEventListener('click', () => {
-             loadSettings(true); // Pass true for manual load
-             const settingsStatus = document.querySelector('#settings-footer p');
-             if(settingsStatus) settingsStatus.textContent = "Settings loaded.";
-             setTimeout(() => { if(settingsStatus) settingsStatus.textContent = "Settings are saved in your browser."; }, 3000);
-         });
-
-
-        // --- Price Input Formatting ---
-        // (Moved to top)
-        ticketPriceInput.addEventListener('blur', formatPriceInput); ticketPriceInput.addEventListener('focus', unformatPriceInput);
-
-         // --- Settings Panel Toggle ---
-         function toggleSettingsPanel(show) { if (show) { loadSearchHistory(); /* Refresh history when opening */ settingsOverlay.classList.remove('hidden'); settingsPanel.classList.remove('translate-x-full'); setTimeout(() => settingsOverlay.classList.remove('opacity-0'), 10); } else { settingsOverlay.classList.add('opacity-0'); settingsPanel.classList.add('translate-x-full'); setTimeout(() => settingsOverlay.classList.add('hidden'), 300); } }
-         settingsToggleButton.addEventListener('click', () => toggleSettingsPanel(true)); closeSettingsButton.addEventListener('click', () => toggleSettingsPanel(false)); settingsOverlay.addEventListener('click', () => toggleSettingsPanel(false));
-
-        // --- Search Type Toggle ---
-        searchTypeRadios.forEach(radio => {
-             radio.addEventListener('change', (e) => {
-                 const isWeekSearch = e.target.value === 'week';
-                 datePickerLabel.textContent = isWeekSearch ? 'Select Week' : 'Select Day';
-                 // Use visibility to maintain layout space for week commencing label
-                 weekCommencingLabel.style.visibility = isWeekSearch ? 'visible' : 'hidden';
-                 daysInOfficeGroup.style.display = isWeekSearch ? 'block' : 'none'; // Hide/show checkboxes
-                 if (isWeekSearch) updateWeekCommencingLabel(); // Update label if switching back to week
-             });
-         });
-
-        // --- Autocomplete Logic ---
-        const autocompleteInputs = [
-             { input: settingOutboundFrom, results: document.getElementById('results-setting-outbound-from'), codeInput: settingOutboundFromCode },
-             { input: settingOutboundTo, results: document.getElementById('results-setting-outbound-to'), codeInput: settingOutboundToCode },
-             { input: settingInboundFrom, results: document.getElementById('results-setting-inbound-from'), codeInput: settingInboundFromCode },
-             { input: settingInboundTo, results: document.getElementById('results-setting-inbound-to'), codeInput: settingInboundToCode }
-         ];
-         let activeAutocompleteIndex = -1;
-
-        autocompleteInputs.forEach(({ input, results, codeInput }) => {
-            input.addEventListener('input', () => handleAutocompleteInput(input, results, codeInput));
-            input.addEventListener('focus', () => handleAutocompleteInput(input, results, codeInput));
-            input.addEventListener('blur', () => setTimeout(() => hideAutocompleteResults(results), 150));
-             input.addEventListener('keydown', (e) => handleAutocompleteKeydown(e, input, results, codeInput));
-        });
-
-         function handleAutocompleteInput(input, resultsContainer, codeInput) {
-             const query = input.value.trim().toLowerCase();
-             resultsContainer.innerHTML = ''; activeAutocompleteIndex = -1; 
-             
-             if (input.value.includes('[') && input.value.includes(']')) {
-                 // Check if the value matches the stored code
-                 if (`[${codeInput.value.toLowerCase()}]` === input.value.slice(-5).toLowerCase()) {
-                     hideAutocompleteResults(resultsContainer);
-                     return;
-                 }
-             }
-
-             if (!query) { hideAutocompleteResults(resultsContainer); return; }
-
-             const filteredStations = (typeof stationData !== 'undefined' ? stationData : []).filter(station =>
-                 station.name.toLowerCase().includes(query) || station.code.toLowerCase().includes(query)
-             ).slice(0, 5); 
-
-             if (filteredStations.length > 0) {
-                 filteredStations.forEach((station, index) => {
-                     const item = document.createElement('div');
-                     item.classList.add('autocomplete-item');
-                     item.dataset.name = station.name; item.dataset.code = station.code; item.dataset.index = index;
-                     // Highlight logic improved
-                     const regex = new RegExp(`(${query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi');
-                     item.innerHTML = `${station.name} [${station.code}]`.replace(regex, '<strong>$1</strong>');
-                     
-                     item.addEventListener('mousedown', (e) => { e.preventDefault(); selectAutocompleteItem(station, input, resultsContainer, codeInput); });
-                     resultsContainer.appendChild(item);
-                 });
-                 resultsContainer.classList.remove('hidden');
-             } else { hideAutocompleteResults(resultsContainer); }
-         }
-         function hideAutocompleteResults(resultsContainer) { resultsContainer.classList.add('hidden'); activeAutocompleteIndex = -1; }
-         function selectAutocompleteItem(station, input, resultsContainer, codeInput) {
-             const displayText = `${station.name} [${station.code}]`;
-             input.value = displayText; // Set display text
-             codeInput.value = station.code; // Set hidden CRS code
-             hideAutocompleteResults(resultsContainer);
-             updateJourneyLabels(); // Update labels in main form
-         }
-         function highlightMatch(text, query) { const regex = new RegExp(`(${query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi'); return text.replace(regex, '<span class="bg-emerald-100 font-bold">$1</span>'); }
-         function handleAutocompleteKeydown(e, input, resultsContainer, codeInput) {
-             const items = resultsContainer.querySelectorAll('.autocomplete-item'); if (items.length === 0) return;
-             if (e.key === 'ArrowDown') { e.preventDefault(); activeAutocompleteIndex = (activeAutocompleteIndex + 1) % items.length; updateAutocompleteHighlight(items); } 
-             else if (e.key === 'ArrowUp') { e.preventDefault(); activeAutocompleteIndex = (activeAutocompleteIndex - 1 + items.length) % items.length; updateAutocompleteHighlight(items); } 
-             else if (e.key === 'Enter' && activeAutocompleteIndex > -1) { e.preventDefault(); const selectedItem = items[activeAutocompleteIndex]; const station = { name: selectedItem.dataset.name, code: selectedItem.dataset.code }; selectAutocompleteItem(station, input, resultsContainer, codeInput); } 
-             else if (e.key === 'Escape') { hideAutocompleteResults(resultsContainer); }
-         }
-         function updateAutocompleteHighlight(items) { items.forEach((item, index) => { if (index === activeAutocompleteIndex) { item.classList.add('is-active'); item.scrollIntoView({ block: 'nearest' }); } else { item.classList.remove('is-active'); } }); }
-
-
-        // --- Page Load ---
-        function setDefaultDate() { const today = new Date(); datePicker.value = formatDateForAPI(today); updateWeekCommencingLabel(); } // Default to today
-        function updateWeekCommencingLabel() { try { if (!datePicker.value) { weekCommencingLabel.textContent = ''; return; } const selectedDate = new Date(datePicker.value); const monday = getMonday(selectedDate); weekCommencingLabel.textContent = `w/c ${formatDateForDisplay(monday)}`; } catch (e) { weekCommencingLabel.textContent = 'Invalid date'; } }
-        datePicker.addEventListener('input', updateWeekCommencingLabel);
-
-        setDefaultDate(); 
-        loadSettings(false); // Load settings on start, 'false' means not manual
-        
-        // Init slider labels
-        updateSliderLabels({ target: fromTimeSliderOutbound }, fromTimeSliderOutbound, toTimeSliderOutbound, fromTimeLabelOutbound, toTimeLabelOutbound); 
-        updateSliderLabels({ target: toTimeSliderOutbound }, fromTimeSliderOutbound, toTimeSliderOutbound, fromTimeLabelOutbound, toTimeLabelOutbound); 
-        updateSliderLabels({ target: fromTimeSliderInbound }, fromTimeSliderInbound, toTimeSliderInbound, fromTimeLabelInbound, toTimeLabelInbound); 
-        updateSliderLabels({ target: toTimeSliderInbound }, fromTimeSliderInbound, toTimeSliderInbound, fromTimeLabelInbound, toTimeLabelInbound);
-
-        // Ensure initial state of days in office group matches default radio
-        if (document.querySelector('input[name="search-type"]:checked').value === 'day') {
-             daysInOfficeGroup.style.display = 'none';
-             weekCommencingLabel.style.visibility = 'hidden'; // Hide label initially if day selected
-        }
-        
-        // Load search history on page load (for settings panel)
-        loadSearchHistory();
-        
-        // Add table filter event listeners
-        const officeTableSearchEl = document.getElementById('office-table-search');
-        const otherTableSearchEl = document.getElementById('other-table-search');
-        if(officeTableSearchEl) officeTableSearchEl.addEventListener('input', (e) => filterTable(resultsBodyOffice, e.target.value));
-        if(otherTableSearchEl) otherTableSearchEl.addEventListener('input', (e) => filterTable(resultsBodyOther, e.target.value));
-
-        function filterTable(tableBody, query) {
-            const lowerQuery = query.toLowerCase();
-            const rows = tableBody.getElementsByTagName('tr');
-            for (const row of rows) {
-                const text = row.textContent.toLowerCase();
-                if (text.includes(lowerQuery)) {
-                    row.style.display = '';
+        function setupAutocomplete(input, results, codeInput, isOutbound) {
+            input.addEventListener('input', function() {
+                const val = this.value.toLowerCase();
+                results.innerHTML = '';
+                if (val.length < 2) { results.classList.add('hidden'); return; }
+                
+                const matches = stationData.filter(s => s.name.toLowerCase().includes(val) || s.code.toLowerCase().includes(val)).slice(0,5);
+                
+                if (matches.length > 0) {
+                    results.classList.remove('hidden');
+                    matches.forEach(s => {
+                        const div = document.createElement('div');
+                        div.className = "px-4 py-2 hover:bg-emerald-50 cursor-pointer text-sm text-gray-700";
+                        div.innerHTML = `<strong>${s.name}</strong> <span class="text-gray-400 text-xs">[${s.code}]</span>`;
+                        div.addEventListener('click', () => {
+                            input.value = s.name;
+                            codeInput.value = s.code;
+                            results.classList.add('hidden');
+                            syncReturnJourney(); // Update return journey
+                        });
+                        results.appendChild(div);
+                    });
                 } else {
-                    row.style.display = 'none';
+                    results.classList.add('hidden');
                 }
+            });
+            
+            // Close on click outside
+            document.addEventListener('click', (e) => {
+                if (!input.contains(e.target) && !results.contains(e.target)) results.classList.add('hidden');
+            });
+        }
+
+        function setLoading(bool) {
+            els.btn.disabled = bool;
+            if (bool) {
+                els.btnText.textContent = "Analysing...";
+                els.btnSpinner.classList.remove('hidden');
+                els.btn.classList.add('opacity-75', 'cursor-wait');
+            } else {
+                els.btnText.textContent = "Check Performance";
+                els.btnSpinner.classList.add('hidden');
+                els.btn.classList.remove('opacity-75', 'cursor-wait');
             }
         }
+        
+        function showStatus(msg, type) {
+            els.status.textContent = msg;
+            els.status.className = `text-center text-xs font-bold mt-2 transition-all ${type === 'error' ? 'text-red-500' : 'text-emerald-600'}`;
+            setTimeout(() => els.status.textContent = '', 4000);
+        }
+
+        function formatDateForAPI(d) {
+            return d.toISOString().split('T')[0];
+        }
+        
+        function formatDateForDisplay(d) {
+            return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+        }
+        
+        function formatTime(t) {
+            if (!t || t.length !== 4) return '--:--';
+            return `${t.substr(0,2)}:${t.substr(2,2)}`;
+        }
+        
+        function updateWeekLabel() {
+            const d = new Date(els.datePicker.value);
+            if (isNaN(d)) return;
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day == 0 ? -6 : 1);
+            const monday = new Date(d.setDate(diff));
+            els.wcLabel.textContent = `Week Commencing: ${formatDateForDisplay(monday)}`;
+        }
+
+        // Start
+        init();
 
     </script>
 </body>
