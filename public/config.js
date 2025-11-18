@@ -4,6 +4,7 @@
 // Use relative paths. This automatically directs requests to the server hosting the page.
 const METRICS_URL = '/api/servicemetrics';
 const DETAILS_URL = '/api/servicedetails';
+const STATIONS_URL = '/api/stations';
 
 // --- Rate Limiting ---
 const RATE_LIMIT_DELAY = 1500;

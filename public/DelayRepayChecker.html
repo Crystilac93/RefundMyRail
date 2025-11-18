@@ -2,9 +2,19 @@
 <html lang="en-GB">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> <!-- Prevent auto-zoom on input focus -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Rail Delay Finder</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🚆</text></svg>" />
+    
+    <!-- Android & PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#10b981"> <!-- Matches GWR Green -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" href="train_icon.png">
+    <link rel="apple-touch-icon" href="train_icon.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -12,31 +22,50 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc;
+            /* Subtle gradient background */
             background-image: linear-gradient(to bottom, #f8fafc, #f1f5f9);
+            min-height: 100vh;
         }
-        /* Progress Ring */
+
+        /* Loader Animation */
         .progress-ring { transition: stroke-dashoffset 0.35s linear; transform: rotate(-90deg); transform-origin: 50% 50%; }
-        
-        /* Colors */
+
+        /* Custom Colors */
         .text-danger { color: #ef4444; font-weight: 600; }
         .text-warning { color: #f59e0b; }
         .text-success { color: #22c55e; }
 
-        /* Inputs: Text-base on mobile to prevent zoom, sm on desktop */
+        /* Mobile-Friendly Inputs (Prevents Zoom on iOS/Android) */
         input[type="text"], input[type="number"], input[type="date"], select {
-            font-size: 16px; /* Mobile friendly base */
+            font-size: 16px; 
         }
         @media (min-width: 640px) {
             input[type="text"], input[type="number"], input[type="date"], select { font-size: 0.875rem; }
         }
 
-        /* Range Slider */
+        /* Enhanced Range Slider for Touch */
         input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; background: #e2e8f0; border-radius: 9999px; outline: none; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 24px; height: 24px; background: #10b981; border-radius: 50%; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.1s; }
-        input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: #10b981; border-radius: 50%; cursor: pointer; border: none; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.1s; }
-        
+        input[type="range"]::-webkit-slider-thumb { 
+            -webkit-appearance: none; appearance: none; 
+            width: 28px; height: 28px; /* Larger touch target */
+            background: #10b981; border: 2px solid #fff; 
+            border-radius: 50%; cursor: pointer; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
+            transition: transform 0.1s; 
+        }
+        input[type="range"]::-moz-range-thumb { 
+            width: 28px; height: 28px; 
+            background: #10b981; border: 2px solid #fff; 
+            border-radius: 50%; cursor: pointer; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
+            transition: transform 0.1s; 
+        }
+        input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.1); }
+
         /* Checkboxes */
-        input[type="checkbox"], input[type="radio"] { color: #10b981; width: 1.25rem; height: 1.25rem; } 
+        input[type="checkbox"], input[type="radio"] { 
+            color: #10b981; width: 1.5rem; height: 1.5rem; /* Larger check targets */
+        }
         input[type="checkbox"]:focus, input[type="radio"]:focus { ring: #10b981; border-color: #10b981; }
 
         /* Icon Inputs */
@@ -44,21 +73,32 @@
         .icon-input-container .icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #9ca3af; pointer-events: none; }
         .icon-input-container input { padding-left: 2.75rem; }
 
-        /* Settings Panel Mobile */
+        /* Ticket Price Input */
+        #ticket-price-settings { appearance: textfield; }
+        #ticket-price-settings::-webkit-outer-spin-button, #ticket-price-settings::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+        /* Settings Panel - Full Screen on Mobile */
         #settings-panel {
             position: fixed; top: 0; right: 0; bottom: 0; 
-            width: 100%; /* Full width on mobile */
-            max-width: 24rem; /* Fixed width on desktop (sm:w-96) */
-            background-color: white; box-shadow: -2px 0 10px rgba(0,0,0,0.1); z-index: 50; 
-            padding: 0; overflow-y: auto; display: flex; flex-direction: column;
+            width: 100%; /* Full width mobile */
+            max-width: 100%;
+            background-color: white; z-index: 50; 
+            display: flex; flex-direction: column;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            transform: translateX(100%); /* Hidden by default */
+            transition: transform 0.3s ease-in-out;
         }
-        @media (min-width: 640px) { #settings-panel { width: 24rem; } }
+        @media (min-width: 640px) { 
+            #settings-panel { width: 24rem; max-width: 24rem; } /* Fixed width desktop */
+        }
 
-        /* Autocomplete */
+        /* Autocomplete Dropdown */
         .autocomplete-results {
             position: absolute; top: 100%; left: 0; right: 0; z-index: 60;
-            background-color: white; border: 1px solid #d1d5db; border-top: none; border-radius: 0 0 0.375rem 0.375rem;
-            max-height: 200px; overflow-y: auto; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            background-color: white; border: 1px solid #d1d5db; border-top: none; 
+            border-radius: 0 0 0.375rem 0.375rem;
+            max-height: 200px; overflow-y: auto; 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
         .autocomplete-item { padding: 0.75rem 1rem; font-size: 16px; cursor: pointer; color: #374151; border-bottom: 1px solid #f3f4f6; }
         .autocomplete-item:last-child { border-bottom: none; }
@@ -69,16 +109,45 @@
         .segmented-control label { flex: 1; text-align: center; padding: 0.75rem; font-size: 0.875rem; font-weight: 500; color: #4b5563; background-color: #fff; cursor: pointer; border-right: 1px solid #d1d5db; }
         .segmented-control label:last-child { border-right: none; }
         .segmented-control input:checked + label { background-color: #ecfdf5; color: #059669; }
+        .segmented-control input { display: none; } /* Hide actual radio buttons */
+
+        /* Transitions */
+        .transition-opacity { transition: opacity 0.3s ease; }
+        .opacity-0 { opacity: 0; pointer-events: none; }
+        .opacity-100 { opacity: 1; pointer-events: auto; }
+        .hidden { display: none !important; }
+
+        /* KPI Cards */
+        .kpi-card-large {
+            background-color: #10b981; color: white; border-radius: 0.75rem; 
+            padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .kpi-widget-small {
+            background-color: white; border-radius: 0.75rem; padding: 1rem; 
+            display: flex; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            min-height: 80px;
+        }
+        /* KPI Colors */
+        .kpi-widget-icon { flex-shrink: 0; padding: 0.6rem; border-radius: 9999px; margin-right: 0.75rem; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+        .kpi-widget-value { font-size: 1.25rem; font-weight: 700; color: #1f2937; line-height: 1.2; }
+        
+        /* Status Colors */
+        .bg-red-200 { background-color: #fecaca; } .text-red-700 { color: #b91c1c; }
+        .bg-amber-100 { background-color: #fef3c7; } .text-amber-600 { color: #d97706; }
+        .bg-orange-100 { background-color: #ffedd5; } .text-orange-600 { color: #ea580c; }
+        .bg-red-100 { background-color: #fee2e2; } .text-red-600 { color: #dc2626; }
     </style>
 </head>
-<body class="min-h-screen pb-10">
+<body class="pb-20">
 
     <!-- Header -->
     <nav class="bg-white shadow-md sticky top-0 z-30">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <svg class="h-8 w-8 text-emerald-600 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.125-.504 1.125-1.125V14.25m-17.25 4.5h12.75m-12.75 0V6.75A2.25 2.25 0 014.5 4.5h15A2.25 2.25 0 0121.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25m-17.25 0h.008v.008H3.375z" /></svg>
+                    <!-- Logo Image -->
+                    <img src="train_icon.png" alt="Logo" class="h-8 w-8 rounded-sm">
                     <span class="ml-3 text-lg font-bold text-gray-800 truncate">DelayRepay Finder</span>
                 </div>
                 <div class="flex items-center">
@@ -96,7 +165,7 @@
     <div id="settings-panel" class="fixed top-0 right-0 bottom-0 w-80 bg-white shadow-xl z-50 transform translate-x-full transition-all duration-300 ease-in-out flex flex-col">
         
         <!-- Header -->
-        <div id="settings-header">
+        <div id="settings-header" class="flex-shrink-0 flex justify-between items-center p-4 border-b border-gray-200">
             <h2 class="text-xl font-semibold text-gray-800">Settings</h2>
             <button id="close-settings-button" type="button" class="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 <span class="sr-only">Close settings</span>
@@ -105,7 +174,7 @@
         </div>
         
         <!-- Main Scrollable Content -->
-        <div id="settings-content" class="flex-grow">
+        <div id="settings-content" class="flex-grow overflow-y-auto p-4 space-y-6">
              <!-- Group 1: Ticket Price Input -->
              <div class="border border-gray-200 rounded-lg p-4">
                  <h3 class="text-md font-medium text-gray-900 mb-3">Ticket Settings</h3>
@@ -157,57 +226,47 @@
                      <h3 class="text-md font-medium text-gray-900">Search History</h3>
                      <button id="clear-history-button" type="button" class="text-xs font-medium text-emerald-600 hover:text-emerald-800">Clear</button>
                  </div>
-                 <div id="search-history-list" class="space-y-1">
-                     <!-- History items will be injected here -->
-                     <div class="history-item is-empty">No history found.</div>
+                 <div id="search-history-list" class="space-y-1 bg-white rounded border border-gray-200 p-2">
+                     <div class="history-item is-empty text-center text-gray-400 text-xs py-2">No history found.</div>
                  </div>
              </div>
         </div>
         
         <!-- Footer with Save/Load Buttons -->
-        <div id="settings-footer">
+        <div id="settings-footer" class="p-4 border-t border-gray-200 bg-gray-50 pb-safe">
              <p class="text-xs text-gray-500 mb-3">Settings are saved in your browser.</p>
              <div class="flex space-x-3">
-                <button type="button" id="save-settings-button" class="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-md shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 text-sm font-medium">Save</button>
-                <button type="button" id="load-settings-button" class="flex-1 bg-slate-100 text-slate-700 py-2 px-4 rounded-md shadow-sm hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 text-sm font-medium">Load</button>
+                <button type="button" id="save-settings-button" class="flex-1 bg-emerald-600 text-white py-3 px-4 rounded-lg shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 text-sm font-medium">Save</button>
+                <button type="button" id="load-settings-button" class="flex-1 bg-slate-100 text-slate-700 py-3 px-4 rounded-lg shadow-sm hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 text-sm font-medium">Load</button>
              </div>
         </div>
     </div>
 
 
     <!-- Main Content Area -->
-    <main class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+    <main class="max-w-3xl mx-auto py-6 px-4 sm:px-6">
 
         <!-- Section 1: Search Form Card -->
-        <div class="bg-white rounded-xl shadow-lg p-6 sm:p-8">
-            <h1 class="text-2xl font-semibold text-gray-900 mb-1">Journey Search</h1>
-            <p class="text-gray-500 text-sm mb-8">
-                Find weekday services to analyse delays and potential compensation.
-            </p>
-
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 sm:p-8">
             <form id="search-form" class="space-y-8">
 
                 <!-- Group 1: Date & Search Type -->
-                <div class="border border-gray-200 rounded-lg p-5">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Search Period</h3>
-                    <div class="flex flex-col sm:flex-row sm:items-end sm:gap-6">
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wide">Search Period</h3>
+                    <div class="flex flex-col sm:flex-row gap-4">
                         <!-- Search Type -->
-                        <fieldset class="mb-4 sm:mb-0 sm:w-auto">
-                             <legend class="block text-sm font-medium text-gray-700 mb-2">Search by:</legend>
-                             <div class="segmented-control">
-                                <input id="search-type-week" name="search-type" type="radio" value="week" checked>
-                                <label for="search-type-week">Week</label>
-                                <input id="search-type-day" name="search-type" type="radio" value="day">
-                                <label for="search-type-day">Day</label>
-                            </div>
-                        </fieldset>
+                        <div class="segmented-control sm:w-1/3">
+                             <input id="search-type-week" name="search-type" type="radio" value="week" checked>
+                             <label for="search-type-week">Week</label>
+                             <input id="search-type-day" name="search-type" type="radio" value="day">
+                             <label for="search-type-day">Day</label>
+                        </div>
 
                         <!-- Date Picker -->
                         <div class="flex-grow">
-                            <label for="date-picker" id="date-picker-label" class="block text-sm font-medium text-gray-700 mb-1">Select Week</label>
                             <div class="icon-input-container">
                                 <svg class="icon h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
-                                <input type="date" id="date-picker" class="icon-input block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500" required>
+                                <input type="date" id="date-picker" class="icon-input block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500" required>
                             </div>
                             <p id="week-commencing-label" class="text-xs text-gray-500 mt-1 min-h-[1.25rem]">w/c ...</p>
                         </div>
@@ -216,77 +275,62 @@
 
 
                  <!-- Group 2: Days in Office (Initially Visible) -->
-                 <div id="days-in-office-group" class="border border-gray-200 rounded-lg p-5">
-                    <h3 class="text-lg font-medium text-gray-900 mb-1">Days in Office</h3>
-                    <p class="text-sm text-gray-500 mb-4">Select the days you travelled.</p>
-                    <fieldset>
-                        <legend class="sr-only">Days in Office</legend>
-                        <div class="flex flex-wrap gap-x-6 gap-y-4">
-                            <div class="flex items-center">
-                                <input id="day-mon" name="daysInOffice" type="checkbox" checked value="1" class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
-                                <label for="day-mon" class="ml-2 block text-sm font-medium text-gray-700">Monday</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input id="day-tue" name="daysInOffice" type="checkbox" checked value="2" class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
-                                <label for="day-tue" class="ml-2 block text-sm font-medium text-gray-700">Tuesday</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input id="day-wed" name="daysInOffice" type="checkbox" checked value="3" class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
-                                <label for="day-wed" class="ml-2 block text-sm font-medium text-gray-700">Wednesday</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input id="day-thu" name="daysInOffice" type="checkbox" checked value="4" class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
-                                <label for="day-thu" class="ml-2 block text-sm font-medium text-gray-700">Thursday</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input id="day-fri" name="daysInOffice" type="checkbox" value="5" class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"> <!-- Friday unchecked -->
-                                <label for="day-fri" class="ml-2 block text-sm font-medium text-gray-700">Friday</label>
-                            </div>
-                        </div>
-                    </fieldset>
+                 <div id="days-in-office-group">
+                    <h3 class="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wide">Days Travelling</h3>
+                    <div class="flex flex-wrap gap-3">
+                        <label class="inline-flex items-center bg-gray-50 px-4 py-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition active:bg-emerald-100">
+                            <input name="daysInOffice" type="checkbox" checked value="1" class="text-emerald-600 focus:ring-emerald-500"><span class="ml-2 text-base font-medium text-gray-700">Mon</span>
+                        </label>
+                        <label class="inline-flex items-center bg-gray-50 px-4 py-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition active:bg-emerald-100">
+                            <input name="daysInOffice" type="checkbox" checked value="2" class="text-emerald-600 focus:ring-emerald-500"><span class="ml-2 text-base font-medium text-gray-700">Tue</span>
+                        </label>
+                        <label class="inline-flex items-center bg-gray-50 px-4 py-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition active:bg-emerald-100">
+                            <input name="daysInOffice" type="checkbox" checked value="3" class="text-emerald-600 focus:ring-emerald-500"><span class="ml-2 text-base font-medium text-gray-700">Wed</span>
+                        </label>
+                        <label class="inline-flex items-center bg-gray-50 px-4 py-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition active:bg-emerald-100">
+                            <input name="daysInOffice" type="checkbox" checked value="4" class="text-emerald-600 focus:ring-emerald-500"><span class="ml-2 text-base font-medium text-gray-700">Thu</span>
+                        </label>
+                        <label class="inline-flex items-center bg-gray-50 px-4 py-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition active:bg-emerald-100">
+                            <input name="daysInOffice" type="checkbox" value="5" class="text-emerald-600 focus:ring-emerald-500"><span class="ml-2 text-base font-medium text-gray-700">Fri</span>
+                        </label>
+                    </div>
                 </div>
 
 
                 <!-- Group 3: Journey Times -->
-                 <div class="border border-gray-200 rounded-lg p-5">
-                     <h3 class="text-lg font-medium text-gray-900 mb-4">Journey Times</h3>
-                    <!-- Outbound -->
-                    <div class="mb-6">
-                        <h4 class="text-md font-medium text-gray-800 mb-1">Outbound (Work) <span id="outbound-stations-label" class="text-xs text-gray-500 font-normal"></span></h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                            <div>
-                                <div class="flex justify-between items-center">
-                                    <label for="from-time-outbound" class="block text-sm font-medium text-gray-700">From Time</label>
-                                    <span id="from-time-label-outbound" class="text-sm font-semibold text-emerald-600">07:00</span>
-                                </div>
-                                <input type="range" id="from-time-outbound" min="0" max="47" value="14" step="1" class="mt-2 w-full">
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500 mb-4 uppercase tracking-wide">Time Windows</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Outbound -->
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-sm font-semibold text-gray-700">Outbound <span id="outbound-stations-label" class="text-xs text-gray-400 font-normal block sm:inline"></span></span>
                             </div>
-                            <div>
-                                <div class="flex justify-between items-center">
-                                    <label for="to-time-outbound" class="block text-sm font-medium text-gray-700">To Time</label>
-                                    <span id="to-time-label-outbound" class="text-sm font-semibold text-emerald-600">07:30</span>
+                            <div class="space-y-6">
+                                <div>
+                                    <div class="flex justify-between text-xs text-gray-500 mb-2"><span>From</span><span id="from-time-label-outbound" class="font-bold text-emerald-600 text-base">07:00</span></div>
+                                    <input type="range" id="from-time-outbound" min="0" max="47" value="14" step="1">
                                 </div>
-                                <input type="range" id="to-time-outbound" min="0" max="47" value="15" step="1" class="mt-2 w-full">
+                                <div>
+                                    <div class="flex justify-between text-xs text-gray-500 mb-2"><span>To</span><span id="to-time-label-outbound" class="font-bold text-emerald-600 text-base">07:30</span></div>
+                                    <input type="range" id="to-time-outbound" min="0" max="47" value="15" step="1">
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <!-- Inbound -->
-                     <div>
-                        <h4 class="text-md font-medium text-gray-800 mb-1">Inbound (Home) <span id="inbound-stations-label" class="text-xs text-gray-500 font-normal"></span></h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                             <div>
-                                <div class="flex justify-between items-center">
-                                    <label for="from-time-inbound" class="block text-sm font-medium text-gray-700">From Time</label>
-                                    <span id="from-time-label-inbound" class="text-sm font-semibold text-emerald-600">17:00</span>
-                                </div>
-                                <input type="range" id="from-time-inbound" min="0" max="47" value="34" step="1" class="mt-2 w-full">
+                        <!-- Inbound -->
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                             <div class="flex justify-between items-center mb-4">
+                                <span class="text-sm font-semibold text-gray-700">Inbound <span id="inbound-stations-label" class="text-xs text-gray-400 font-normal block sm:inline"></span></span>
                             </div>
-                            <div>
-                                <div class="flex justify-between items-center">
-                                    <label for="to-time-inbound" class="block text-sm font-medium text-gray-700">To Time</label>
-                                    <span id="to-time-label-inbound" class="text-sm font-semibold text-emerald-600">17:30</span>
+                            <div class="space-y-6">
+                                <div>
+                                    <div class="flex justify-between text-xs text-gray-500 mb-2"><span>From</span><span id="from-time-label-inbound" class="font-bold text-emerald-600 text-base">17:00</span></div>
+                                    <input type="range" id="from-time-inbound" min="0" max="47" value="34" step="1">
                                 </div>
-                                <input type="range" id="to-time-inbound" min="0" max="47" value="35" step="1" class="mt-2 w-full">
+                                <div>
+                                    <div class="flex justify-between text-xs text-gray-500 mb-2"><span>To</span><span id="to-time-label-inbound" class="font-bold text-emerald-600 text-base">17:30</span></div>
+                                    <input type="range" id="to-time-inbound" min="0" max="47" value="35" step="1">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -296,9 +340,9 @@
                 <div class="pt-6 flex justify-between items-center min-h-[4rem]"> <!-- Ensure minimum height -->
                      <!-- Status & Loading (Moved Left) -->
                      <div id="status-loading-container" class="flex items-center flex-grow mr-4"> <!-- Container for status/loading -->
-                         <div id="loading" class="hidden items-center">
-                            <div class="relative w-8 h-8">
-                                <svg class="w-full h-full" viewBox="0 0 36 36"><path class="text-gray-200" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3.8" /><path id="progress-ring" class="text-emerald-500 progress-ring" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3.8" stroke-dasharray="100, 100" stroke-dashoffset="100" /></svg>
+                         <div id="loading" class="hidden items-center mr-3">
+                            <div class="w-5 h-5 mr-2">
+                                <svg class="w-full h-full animate-spin text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                             </div>
                             <span id="loading-message" class="ml-2 text-sm text-gray-600">Fetching...</span>
                         </div>
@@ -359,7 +403,7 @@
         </div>
 
         <!-- Section 2: Results Area (Initially Hidden with transition) -->
-        <div id="results-area" class="mt-10 opacity-0 transition-opacity duration-500 ease-in-out">
+        <div id="results-area" class="mt-10 opacity-0 hidden transition-opacity duration-500 pb-safe">
 
             <!-- In-Office KPI Summary Dashboard -->
             <h2 class="text-xl font-semibold text-gray-900 mb-4">In-Office Summary</h2>
@@ -563,7 +607,6 @@
                                 <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actual Arr.</th>
                                 <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delay</th>
                                 <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Refund</th>
-                                <!-- Reason column removed -->
                             </tr>
                         </thead>
                         <tbody id="results-body-other" class="bg-white divide-y divide-gray-200">
@@ -588,7 +631,7 @@
                         <p class="text-sm text-gray-700 mb-4">
                             The following requests failed due to API rate limits. The data for these items may be incomplete or missing:
                         </p>
-                        <ul id="error-list" class="list-disc list-inside space-y-1 text-sm text-red-700">
+                        <ul id="error-list" class="list-disc list-inside text-sm text-red-700">
                             <!-- Failed requests will be listed here -->
                         </ul>
                     </div>
@@ -600,10 +643,10 @@
 
     </main>
 
-    <script src="config.js"></script> <!-- Load config first -->
-    <script src="station_data.js"></script> <!-- Load station data -->
+    <script src="config.js"></script>
+    <script src="station_data.js"></script>
     <script>
-        // --- All JS Logic (Consolidated and Cleaned) ---
+        // --- All JS Logic (Consolidated) ---
         
         // --- Utility Functions ---
         const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -619,12 +662,7 @@
              inboundStationsLabel.textContent = `(${settingInboundFromCode.value} → ${settingInboundToCode.value})`;
          }
 
-        // --- Price Input Formatting (Used by loadSettings) ---
-        // Note: ticketPriceInput is defined later, so we defer this until DOMContentLoaded or script execution flow.
-        // However, these are function definitions so they are hoisted or available.
-        // We need to be careful about ticketPriceInput access.
-        // We'll rely on ticketPriceInput being defined before these functions are CALLED.
-
+        // --- Price Input Formatting ---
         function formatPriceInput() { 
             if(!ticketPriceInput) return;
             const inputVal = String(ticketPriceInput.value); 
@@ -644,8 +682,7 @@
             return parseFloat(String(ticketPriceInput.value).replace(/[^0-9.]/g, '')) || 0; 
         }
 
-        // --- Settings Persistence (Must be available before the loadSettings call) ---
-
+        // --- Settings Persistence ---
         function loadSettings(isManual = false) {
              const savedSettings = localStorage.getItem('railDelayFinderSettings');
              if (savedSettings) {
@@ -669,7 +706,7 @@
                   rawPriceValue = 7437.92;
                   if(ticketPriceInput) ticketPriceInput.value = rawPriceValue;
                   formatPriceInput(); 
-                  updateJourneyLabels(); // Update labels with default stations
+                  updateJourneyLabels(); 
                   if (isManual) showStatus('No saved settings found.', 'info');
              }
          }
@@ -697,6 +734,9 @@
         const resultsBodyOther = document.getElementById('results-body-other');
         const noOfficeResultsMsg = document.getElementById('no-office-results');
         const noOtherResultsMsg = document.getElementById('no-other-results');
+        const officeTableSearch = document.getElementById('office-table-search');
+        const otherTableSearch = document.getElementById('other-table-search');
+
 
         // --- Error Report Elements ---
         const errorReportArea = document.getElementById('error-report-area');
@@ -707,22 +747,17 @@
         const weekCommencingLabel = document.getElementById('week-commencing-label');
         const daysInOfficeCheckboxes = document.querySelectorAll('input[name="daysInOffice"]');
         const ticketPriceInput = document.getElementById('ticket-price-settings');
-        
-        // Variable to hold raw price value for formatting logic
-        let rawPriceValue = 7437.92; // Default
+        let rawPriceValue = 7437.92; 
 
-        // Station inputs from settings panel (DISPLAY inputs)
+        // Station inputs
         const settingOutboundFrom = document.getElementById('setting-outbound-from');
         const settingOutboundTo = document.getElementById('setting-outbound-to');
         const settingInboundFrom = document.getElementById('setting-inbound-from');
         const settingInboundTo = document.getElementById('setting-inbound-to');
-        // Station inputs from settings panel (HIDDEN CRS inputs)
         const settingOutboundFromCode = document.getElementById('setting-outbound-from-code');
         const settingOutboundToCode = document.getElementById('setting-outbound-to-code');
         const settingInboundFromCode = document.getElementById('setting-inbound-from-code');
         const settingInboundToCode = document.getElementById('setting-inbound-to-code');
-
-        // Labels for station codes in main form
         const outboundStationsLabel = document.getElementById('outbound-stations-label');
         const inboundStationsLabel = document.getElementById('inbound-stations-label');
 
@@ -764,14 +799,18 @@
 
         // --- Loader Element ---
         const progressRing = document.getElementById('progress-ring');
-        const circumference = 2 * Math.PI * 15.9155; // Radius of the circle
+        const circumference = 2 * Math.PI * 15.9155; 
         progressRing.style.strokeDashoffset = circumference;
 
         // --- Utility ---
-        // const wait = ... defined at top
-        // const WEEKDAYS_MAP = ... defined at top
-
-        // --- Form Submission (Main Logic) ---
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        
+        // --- Core Helper Functions ---
+        function getMonday(d) { d = new Date(d); let day = d.getDay(), diff = d.getDate() - day + (day == 0 ? -6 : 1); return new Date(d.setDate(diff)); }
+        function formatDateForAPI(date) { const y = date.getFullYear(), m = (date.getMonth() + 1).toString().padStart(2, '0'), d = date.getDate().toString().padStart(2, '0'); return `${y}-${m}-${d}`; }
+        function formatDateForDisplay(date) { return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); }
+        
+        // Form Submission
         searchForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const searchType = document.querySelector('input[name="search-type"]:checked').value;
@@ -784,9 +823,6 @@
             showStatus('', 'info');
             resultsBodyOffice.innerHTML = ''; resultsBodyOther.innerHTML = '';
             noOfficeResultsMsg.classList.add('hidden'); noOtherResultsMsg.classList.add('hidden');
-            // Clear search inputs
-            const officeTableSearch = document.getElementById('office-table-search');
-            const otherTableSearch = document.getElementById('other-table-search');
             if (officeTableSearch) officeTableSearch.value = '';
             if (otherTableSearch) otherTableSearch.value = '';
 
@@ -797,17 +833,15 @@
                 daysInOfficeCheckboxes.forEach(cb => { if (cb.checked) officeDays.add(parseInt(cb.value, 10)); });
             }
 
-            // Get station codes from *hidden* code inputs
-             const outboundFrom = settingOutboundFromCode.value;
-             const outboundTo = settingOutboundToCode.value;
-             const inboundFrom = settingInboundFromCode.value;
-             const inboundTo = settingInboundToCode.value;
+            const outboundFrom = settingOutboundFromCode.value;
+            const outboundTo = settingOutboundToCode.value;
+            const inboundFrom = settingInboundFromCode.value;
+            const inboundTo = settingInboundToCode.value;
 
             const journeyTypes = [
                  { type: "Outbound (Work)", from_loc: outboundFrom, to_loc: outboundTo, from_time: convertSliderValueToApiTime(fromTimeSliderOutbound.value), to_time: convertSliderValueToApiTime(toTimeSliderOutbound.value), label: "Outbound" },
                  { type: "Inbound (Home)", from_loc: inboundFrom, to_loc: inboundTo, from_time: convertSliderValueToApiTime(fromTimeSliderInbound.value), to_time: convertSliderValueToApiTime(toTimeSliderInbound.value), label: "Inbound" }
              ];
-
 
             let daysToFetch = [];
             if (searchType === 'week') { const monday = getMonday(new Date(datePicker.value)); for (let i = 0; i < 5; i++) { const d = new Date(monday.getTime()); d.setDate(monday.getDate() + i); daysToFetch.push(formatDateForAPI(d)); } }
@@ -817,7 +851,7 @@
             let metricsFetches = 0;
 
             try {
-                // --- Step 1: Fetch Metrics ---
+                // Step 1: Fetch Metrics
                 for (const dateStr of daysToFetch) {
                     const currentDayDate = new Date(dateStr + 'T00:00:00Z'); const dayOfWeekIndex = currentDayDate.getUTCDay();
                      if (searchType === 'day' && (dayOfWeekIndex === 0 || dayOfWeekIndex === 6)) { showStatus(`Selected date (${dateStr}) is not a weekday.`, 'info'); continue; }
@@ -840,20 +874,20 @@
                                 success = true;
                             } catch (fetchError) { failedRequests.push(`Service list for ${dateStr} (${journey.label}) - Network Error (Attempt ${attempt})`); showStatus(`Network error fetching ${dateStr} (${journey.label}). Skipping...`, 'error'); break;
                             } finally { if (success || attempt >= 2) { await wait(RATE_LIMIT_DELAY); } }
-                        } // End while retry
-                    } // End journey loop
-                } // End date loop
+                        } 
+                    } 
+                }
 
                 if (allServices.length === 0 && failedRequests.length === 0) { showStatus('Success! No services found.', 'info'); skeletonLoader.classList.add('hidden'); setLoading(false); submitButton.disabled = false; return; }
                 else if (allServices.length === 0 && failedRequests.length > 0) { showStatus('Finished. No services found, requests failed.', 'warning'); }
 
-                // --- Step 2: Fetch Details ---
+                // Step 2: Fetch Details
                 let detailedServices = []; const totalDetails = allServices.length;
                 if (totalDetails > 0) {
                      for (let i = 0; i < totalDetails; i++) {
                         const serviceContext = allServices[i]; const rid = serviceContext.rid;
                         const progressPercent = 0.5 + ((i + 1) / totalDetails * 0.5);
-                        setLoading(true, `Fetching details for train ${i + 1} of ${totalDetails}...`, progressPercent); // Simplified msg
+                        setLoading(true, `Fetching details for train ${i + 1} of ${totalDetails}...`, progressPercent); 
                         let detailsResponse; let detailsData; let attempt = 1; let success = false;
                         while (attempt <= 2 && !success) {
                             try {
@@ -866,19 +900,19 @@
                                 detailsData = await detailsResponse.json(); success = true;
                             } catch(fetchError) { failedRequests.push(`Details for RID ${rid} on ${serviceContext.date} (${serviceContext.journeyType}) - Network Error (Attempt ${attempt})`); showStatus(`Network error for RID ${rid}. Skipping.`, 'error'); break;
                             } finally { if (success || attempt >= 2) { await wait(RATE_LIMIT_DELAY); } }
-                        } // End while retry
+                        } 
 
                         if (success && detailsData) {
                              const serviceDetails = detailsData.serviceAttributesDetails; const locations = serviceDetails?.locations || [];
                             const departureInfo = locations.find(loc => loc.location === serviceContext.from_loc); const arrivalInfo = locations.find(loc => loc.location === serviceContext.to_loc); const serviceDate = serviceContext.date;
                             if (departureInfo && arrivalInfo && serviceDetails) {
-                                detailedServices.push({ rid: rid, journeyType: serviceContext.journeyType, dateOfService: serviceDate, scheduledDeparture: departureInfo.gbtt_ptd, scheduledArrival: arrivalInfo.gbtt_pta, actualArrival: arrivalInfo.actual_ta, reason: arrivalInfo.late_canc_reason || '' });
+                                detailedServices.push({ rid: rid, journeyType: serviceContext.journeyType, dateOfService: serviceDate, scheduledDeparture: departureInfo.gbtt_ptd, scheduledArrival: arrivalInfo.gbtt_pta, actualArrival: arrivalInfo.actual_ta });
                             } else { failedRequests.push(`Details incomplete for RID ${rid} on ${serviceContext.date} (${serviceContext.journeyType})`); }
                         }
-                    } // End for details loop
-                } // End if totalDetails > 0
+                    } 
+                } 
 
-                // --- Step 3: Display Results ---
+                // Step 3: Display Results
                 setLoading(false); skeletonLoader.classList.add('hidden');
                 if (failedRequests.length > 0) { errorReportArea.classList.remove('hidden'); setTimeout(() => errorReportArea.classList.remove('opacity-0'), 50); displayFailedRequests(failedRequests); }
 
@@ -890,17 +924,14 @@
 
                     const officeServices = []; const otherServices = [];
 
-                    // Filter based on search type
                     if (searchType === 'week') {
                          detailedServices.forEach(service => { const [y, m, d] = service.dateOfService.split('-').map(Number); const serviceDate = new Date(Date.UTC(y, m - 1, d)); const day = serviceDate.getUTCDay(); if (officeDays.has(day)) officeServices.push(service); else otherServices.push(service); });
-                    } else { // searchType === 'day' - all results go into 'office' for display
+                    } else { 
                          officeServices.push(...detailedServices);
-                         // Hide the "Other Weekdays" section entirely
                          otherWeekdaysSummaryHeading.classList.add('hidden');
                          otherWeekdaysKpiGrid.classList.add('hidden');
                          otherWeekdaysTableCard.classList.add('hidden');
                     }
-                     // Ensure sections are visible if searching by week again later
                      if(searchType === 'week') {
                         otherWeekdaysSummaryHeading.classList.remove('hidden');
                         otherWeekdaysKpiGrid.classList.remove('hidden');
@@ -913,14 +944,11 @@
                     const officeKPIs = calculateKPIs(officeServices);
                     const otherKPIs = calculateKPIs(otherServices);
 
-                    // Populate Office KPIs
                     totalJourneysKPIOffice.textContent = officeKPIs.counts.total; cancelledKPIOffice.textContent = officeKPIs.counts.cancelled; delayed1529Office.textContent = officeKPIs.counts.delayed_15_29; delayed3059Office.textContent = officeKPIs.counts.delayed_30_59; delayed60119Office.textContent = officeKPIs.counts.delayed_60_119; delayed120PlusOffice.textContent = officeKPIs.counts.delayed_120_plus; totalRefundKPIOffice.textContent = `£${officeKPIs.refund.toFixed(2)}`;
-                    // Populate Other KPIs (only if searching by week)
                     if(searchType === 'week') {
                         totalJourneysKPIOther.textContent = otherKPIs.counts.total; cancelledKPIOther.textContent = otherKPIs.counts.cancelled; delayed1529Other.textContent = otherKPIs.counts.delayed_15_29; delayed3059Other.textContent = otherKPIs.counts.delayed_30_59; delayed60119Other.textContent = otherKPIs.counts.delayed_60_119; delayed120PlusOther.textContent = otherKPIs.counts.delayed_120_plus; totalRefundKPIOther.textContent = `£${otherKPIs.refund.toFixed(2)}`;
                     }
 
-                    // --- Save to History ---
                     let searchLabel = "";
                      if (searchType === 'week') {
                          searchLabel = `w/c ${formatDateForAPI(getMonday(new Date(datePicker.value)))}`;
@@ -935,7 +963,6 @@
 
                     resultsArea.classList.remove('hidden'); setTimeout(() => resultsArea.classList.remove('opacity-0'), 50);
                     displayResults(officeServices, resultsBodyOffice, noOfficeResultsMsg);
-                    // Only display the 'other' table if searching by week
                     if (searchType === 'week') {
                         displayResults(otherServices, resultsBodyOther, noOtherResultsMsg);
                     }
@@ -959,10 +986,6 @@
                 const delayInfo = getDelayInfo(delayMinutes, service.actualArrival);
                 const actualArrivalDisplay = isCancelled ? '<span class="text-danger font-semibold">Cancelled</span>' : formatTime(service.actualArrival);
                 
-                // REMOVED reason lookup logic
-                // const shortReason = ' '; 
-                // const fullReason = ''; 
-
                 const row = document.createElement('tr'); row.className = 'hover:bg-slate-100 transition-colors duration-150';
                 row.innerHTML = `
                     <td class="py-3 px-6 whitespace-nowrap text-sm text-gray-700">${service.dateOfService}</td>
@@ -972,7 +995,6 @@
                     <td class="py-3 px-6 whitespace-nowrap text-sm ${delayInfo.style}">${actualArrivalDisplay}</td>
                     <td class="py-3 px-6 whitespace-nowrap text-sm ${delayInfo.style}">${delayInfo.category} ${delayInfo.category !== 'Cancelled' ? `(${delayMinutes}m)`: ''}</td>
                     <td class="py-3 px-6 whitespace-nowrap text-sm ${delayInfo.style}">£${delayInfo.refund.toFixed(2)}</td>
-                    <!-- Reason cell removed -->
                 `; tableBody.appendChild(row);
             });
         }
@@ -1000,11 +1022,31 @@
 
         // --- UI State Helpers ---
         function setLoading(isLoading, message = "", progress = 0) { const clampedProgress = Math.max(0, Math.min(1, progress)); if (isLoading) { loadingSpinner.classList.remove('hidden'); loadingSpinner.classList.add('flex'); statusMessage.textContent = ''; loadingMessage.textContent = message; const offset = circumference - clampedProgress * circumference; progressRing.style.strokeDashoffset = offset; } else { loadingSpinner.classList.add('hidden'); loadingSpinner.classList.remove('flex'); loadingMessage.textContent = ''; progressRing.style.strokeDashoffset = 0; setTimeout(() => { progressRing.style.strokeDashoffset = circumference; }, 500); } }
-        function showStatus(message, type) { statusMessage.textContent = message; statusMessage.className = 'text-center text-sm '; if (type === 'error') statusMessage.classList.add('text-danger'); else if (type === 'success') statusMessage.classList.add('text-success', 'font-medium'); else if (type === 'info') statusMessage.classList.add('text-emerald-600'); else if (type === 'warning') statusMessage.classList.add('text-warning'); }
+        function showStatus(message, type) { statusMessage.textContent = message; statusMessage.className = 'text-sm text-left '; if (type === 'error') statusMessage.classList.add('text-danger'); else if (type === 'success') statusMessage.classList.add('text-success', 'font-medium'); else if (type === 'info') statusMessage.classList.add('text-emerald-600'); else if (type === 'warning') statusMessage.classList.add('text-warning'); }
 
          // --- Settings Persistence ---
-        function saveSettings() { const settings = { ticketPrice: getRawTicketPrice(), daysInOffice: Array.from(daysInOfficeCheckboxes).filter(cb => cb.checked).map(cb => cb.value), outboundFrom: settingOutboundFromCode.value, outboundTo: settingOutboundToCode.value, inboundFrom: settingInboundFromCode.value, inboundTo: settingInboundToCode.value, outboundFromDisplay: settingOutboundFrom.value, outboundToDisplay: settingOutboundTo.value, inboundFromDisplay: settingInboundFrom.value, inboundToDisplay: settingInboundTo.value }; localStorage.setItem('railDelayFinderSettings', JSON.stringify(settings)); showStatus('Settings saved.', 'success'); setTimeout(() => { if (statusMessage.textContent === 'Settings saved.') showStatus('', 'info'); }, 3000); updateJourneyLabels(); }
-        function loadSettings(isManual = false) { const savedSettings = localStorage.getItem('railDelayFinderSettings'); if (savedSettings) { try { const settings = JSON.parse(savedSettings); if (settings.ticketPrice) { ticketPriceInput.value = settings.ticketPrice; formatPriceInput(); } if (settings.daysInOffice && Array.isArray(settings.daysInOffice)) { const savedDays = new Set(settings.daysInOffice); daysInOfficeCheckboxes.forEach(cb => { cb.checked = savedDays.has(cb.value); }); } settingOutboundFromCode.value = settings.outboundFrom || 'DID'; settingOutboundFrom.value = settings.outboundFromDisplay || 'Didcot Parkway [DID]'; settingOutboundToCode.value = settings.outboundTo || 'PAD'; settingOutboundTo.value = settings.outboundToDisplay || 'London Paddington [PAD]'; settingInboundFromCode.value = settings.inboundFrom || 'PAD'; settingInboundFrom.value = settings.inboundFromDisplay || 'London Paddington [PAD]'; settingInboundToCode.value = settings.inboundTo || 'DID'; settingInboundTo.value = settings.inboundToDisplay || 'Didcot Parkway [DID]'; updateJourneyLabels(); if (isManual) showStatus('Settings loaded.', 'info'); } catch (e) { console.error("Error loading settings:", e); showStatus('Could not load settings.', 'error'); } } else { formatPriceInput(); updateJourneyLabels(); if (isManual) showStatus('No saved settings found.', 'info'); } }
+         function getSettingsFromForm() {
+             return {
+                 ticketPrice: getRawTicketPrice(),
+                 daysInOffice: Array.from(daysInOfficeCheckboxes).filter(cb => cb.checked).map(cb => cb.value),
+                 outboundFrom: settingOutboundFromCode.value,
+                 outboundTo: settingOutboundToCode.value,
+                 inboundFrom: settingInboundFromCode.value,
+                 inboundTo: settingInboundToCode.value,
+                 outboundFromDisplay: settingOutboundFrom.value,
+                 outboundToDisplay: settingOutboundTo.value,
+                 inboundFromDisplay: settingInboundFrom.value,
+                 inboundToDisplay: settingInboundTo.value
+             };
+         }
+
+        function saveSettings() {
+             const settings = getSettingsFromForm();
+             localStorage.setItem('railDelayFinderSettings', JSON.stringify(settings));
+             showStatus('Settings saved.', 'success');
+             setTimeout(() => { if (statusMessage.textContent === 'Settings saved.') showStatus('', 'info'); }, 3000);
+             updateJourneyLabels(); // Update main form labels after saving
+         }
         
          // --- Search History ---
          const MAX_HISTORY_ITEMS = 10;
@@ -1048,13 +1090,11 @@
                  li.className = 'history-item';
                  let displayLabel = item.label;
                  if(item.label.startsWith('w/c')) {
-                     // Parse date string from "w/c YYYY-MM-DD"
                      try {
                         const datePart = item.label.split(' ')[1];
                         displayLabel = `w/c ${formatDateForDisplay(new Date(datePart + 'T00:00:00Z'))}`;
                      } catch(e) { /* Fallback */ }
                  } else if (item.label.startsWith('Day')) {
-                      // Parse date string from "Day YYYY-MM-DD"
                       try {
                         const datePart = item.label.split(' ')[1];
                         displayLabel = `Day ${formatDateForDisplay(new Date(datePart + 'T00:00:00Z'))}`;
