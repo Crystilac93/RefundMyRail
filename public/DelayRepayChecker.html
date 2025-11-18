@@ -1,259 +1,101 @@
 <!DOCTYPE html>
-<html lang="en-GB"> <head>
+<html lang="en-GB">
+<head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> <!-- Prevent auto-zoom on input focus -->
     <title>Rail Delay Finder</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🚆</text></svg>" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        html { scroll-behavior: smooth; }
+        html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc; /* Lighter slate-50 for subtle gradient */
-            background-image: linear-gradient(to bottom, #f8fafc, #f1f5f9); /* slate-50 to slate-100 */
+            background-color: #f8fafc;
+            background-image: linear-gradient(to bottom, #f8fafc, #f1f5f9);
         }
-        /* Radial Progress Loader */
-        .progress-ring {
-            transition: stroke-dashoffset 0.35s linear; /* Smoother transition */
-            transform: rotate(-90deg);
-            transform-origin: 50% 50%;
-        }
-        .text-danger { color: #ef4444; font-weight: 600; } /* red-500 */
-        .text-warning { color: #f59e0b; } /* amber-500 */
-        .text-success { color: #22c55e; } /* green-500 */
-
-        /* Checkbox & Radio Styles */
-        input[type="checkbox"], input[type="radio"] { color: #10b981; } /* emerald-500 */
-        input[type="checkbox"]:focus, input[type="radio"]:focus { ring: #10b981; border-color: #10b981;} /* emerald-500 */
+        /* Progress Ring */
+        .progress-ring { transition: stroke-dashoffset 0.35s linear; transform: rotate(-90deg); transform-origin: 50% 50%; }
         
-        /* Time Input Style */
-        input[type="time"] {
-             -webkit-appearance: none; appearance: none;
-             background-color: #fff;
-             border: 1px solid #d1d5db;
-             border-radius: 0.375rem;
-             padding: 0.4rem 0.75rem;
-             font-size: 0.875rem;
-             box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-        }
-         input[type="time"]:focus {
-             outline: 2px solid transparent; outline-offset: 2px;
-             border-color: #10b981;
-             box-shadow: 0 0 0 1px #10b981;
-         }
+        /* Colors */
+        .text-danger { color: #ef4444; font-weight: 600; }
+        .text-warning { color: #f59e0b; }
+        .text-success { color: #22c55e; }
 
-        /* Input with Icon Styles */
+        /* Inputs: Text-base on mobile to prevent zoom, sm on desktop */
+        input[type="text"], input[type="number"], input[type="date"], select {
+            font-size: 16px; /* Mobile friendly base */
+        }
+        @media (min-width: 640px) {
+            input[type="text"], input[type="number"], input[type="date"], select { font-size: 0.875rem; }
+        }
+
+        /* Range Slider */
+        input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; background: #e2e8f0; border-radius: 9999px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 24px; height: 24px; background: #10b981; border-radius: 50%; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.1s; }
+        input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: #10b981; border-radius: 50%; cursor: pointer; border: none; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.1s; }
+        
+        /* Checkboxes */
+        input[type="checkbox"], input[type="radio"] { color: #10b981; width: 1.25rem; height: 1.25rem; } 
+        input[type="checkbox"]:focus, input[type="radio"]:focus { ring: #10b981; border-color: #10b981; }
+
+        /* Icon Inputs */
         .icon-input-container { position: relative; }
         .icon-input-container .icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #9ca3af; pointer-events: none; }
-        .icon-input-container input, .icon-input-container .input-like { padding-left: 2.5rem; }
+        .icon-input-container input { padding-left: 2.75rem; }
 
-        /* Ticket Price Input Styles */
-        #ticket-price-settings {
-             appearance: textfield; background-color: #fff; border-width: 1px; border-color: #d1d5db; border-radius: 0.375rem; padding-top: 0.5rem; padding-right: 0.75rem; padding-bottom: 0.5rem; font-size: 1rem; line-height: 1.5rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
-        #ticket-price-settings:focus {
-             outline: 2px solid transparent; outline-offset: 2px; --tw-ring-color: #10b981; border-color: var(--tw-ring-color); box-shadow: 0 0 0 1px var(--tw-ring-color); }
-        #ticket-price-settings::-webkit-outer-spin-button, #ticket-price-settings::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        #ticket-price-settings[type=number] { -moz-appearance: textfield; }
-
-        /* REPLACED: kpi-card-large styles (no longer needed) */
-        
-        /* Small KPI Widget (NEW FILLED STYLE) */
-        .kpi-widget-small {
-            background-color: #10b981; /* Default: emerald-500 */
-            color: #ffffff;
-            border-radius: 0.75rem; /* rounded-xl */
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); /* Match large card shadow */
-            padding: 1rem; /* p-4 */
-            display: flex;
-            align-items: center;
+        /* Settings Panel Mobile */
+        #settings-panel {
+            position: fixed; top: 0; right: 0; bottom: 0; 
+            width: 100%; /* Full width on mobile */
+            max-width: 24rem; /* Fixed width on desktop (sm:w-96) */
+            background-color: white; box-shadow: -2px 0 10px rgba(0,0,0,0.1); z-index: 50; 
+            padding: 0; overflow-y: auto; display: flex; flex-direction: column;
         }
-        .kpi-widget-icon {
-            flex-shrink: 0;
-            padding: 0.6rem;
-            border-radius: 9999px;
-            margin-right: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 36px;
-            height: 36px;
-            background-color: rgba(255, 255, 255, 0.15); /* Transparent white */
-        }
-        /* Icon SVG color */
-        .kpi-widget-icon svg {
-            color: #ffffff; /* White icon */
-        }
-        .kpi-widget-content { 
-            flex-grow: 1;
-            /* NEW: Make label and value horizontal */
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-        }
-        .kpi-widget-label { 
-            font-size: 0.75rem; /* text-xs */ 
-            font-weight: 600; 
-            color: #d1fae5; /* Default: emerald-100 */
-            text-transform: uppercase; 
-            letter-spacing: 0.05em;
-            /* NEW: Remove margin */
-        }
-        .kpi-widget-value { 
-            font-size: 1.875rem; /* text-3xl */ 
-            line-height: 2.25rem;
-            font-weight: 700; 
-            color: #ffffff; /* White text */
-            /* NEW: Remove margin */
-        }
-        
-        /* Remove default delay text colors */
-        .kpi-widget-value.is-delayed,
-        .kpi-widget-value.is-delayed-medium,
-        .kpi-widget-value.is-delayed-high,
-        .kpi-widget-value.is-cancelled { 
-            color: #ffffff; /* All values are white now */
-        }
+        @media (min-width: 640px) { #settings-panel { width: 24rem; } }
 
-        /* --- Color Variants --- */
-        /* We need to apply these to the .kpi-widget-small element */
-
-        /* Amber (15-29) */
-        .kpi-widget-small.variant-amber {
-            background-color: #f59e0b; /* amber-500 */
-        }
-        .kpi-widget-small.variant-amber .kpi-widget-label { color: #fef3c7; /* amber-100 */ }
-
-        /* Orange (30-59) */
-        .kpi-widget-small.variant-orange {
-            background-color: #f97316; /* orange-500 */
-        }
-        .kpi-widget-small.variant-orange .kpi-widget-label { color: #ffedd5; /* orange-100 */ }
-
-        /* Red (60-119) */
-        .kpi-widget-small.variant-red {
-            background-color: #ef4444; /* red-500 */
-        }
-        .kpi-widget-small.variant-red .kpi-widget-label { color: #fee2e2; /* red-100 */ }
-
-        /* Red-700 (120+ & Cancelled) */
-        .kpi-widget-small.variant-red-dark {
-            background-color: #b91c1c; /* red-700 */
-        }
-        .kpi-widget-small.variant-red-dark .kpi-widget-label { color: #fecaca; /* red-200 */ }
-
-        /* Slate (for 'Other' section) */
-        .kpi-widget-small.variant-slate {
-            background-color: #475569; /* slate-600 */
-        }
-        .kpi-widget-small.variant-slate .kpi-widget-label { color: #cbd5e1; /* slate-300 */ }
-        .kpi-widget-small.variant-slate .kpi-widget-icon { background-color: rgba(0, 0, 0, 0.15); } /* Differentiate icon bg */
-        
-
-        /* Skeleton Loader Styles */
-        .skeleton { background-color: #e5e7eb; border-radius: 0.25rem; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes pulse { 50% { opacity: .5; } }
-        .skeleton-kpi-large { height: 80px; /* Approx height of new large kpi card */ }
-        .skeleton-kpi-small { height: 80px; /* Approx height of small kpi widget */ }
-        .skeleton-table-head { height: 49px; margin-bottom: 0.5rem; }
-        .skeleton-table-row { height: 65px; margin-bottom: 0.5rem; }
-        .skeleton-table-footer { height: 57px; margin-top: 0.5rem; }
-
-        /* Transitions */
-        .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 300ms; }
-        .opacity-0 { opacity: 0; }
-        .opacity-100 { opacity: 1; }
-        .translate-x-full { transform: translateX(100%); }
-        .translate-x-0 { transform: translateX(0); }
-
-        /* Table: Removed Zebra-striping, added hover */
-         #results-table-office tbody tr:hover,
-         #results-table-other tbody tr:hover { 
-             background-color: #f9fafb; /* gray-50 */ 
-         }
-
-         /* Settings Panel Styles */
-        #settings-panel { position: fixed; top: 0; right: 0; bottom: 0; width: 320px; background-color: white; box-shadow: -2px 0 10px rgba(0,0,0,0.1); z-index: 50; padding: 0; /* Padding removed for full height scroll */ overflow-y: auto; display: flex; flex-direction: column; }
-        #settings-header { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid #e5e7eb; }
-        #settings-content { flex-grow: 1; padding: 1.5rem; space-y-6; overflow-y: auto; }
-        #settings-footer { flex-shrink: 0; padding: 1.5rem; border-top: 1px solid #e5e7eb; background-color: #f9fafb; }
-        #settings-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 40; }
-
-        /* Segmented Control Styles */
-        .segmented-control { display: inline-flex; border-radius: 0.375rem; /* rounded-md */ overflow: hidden; border: 1px solid #d1d5db; /* border-gray-300 */ width: 100%; /* Make container full width */}
-        .segmented-control input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
-        .segmented-control label {
-            flex: 1; /* Make labels take equal space */
-            text-align: center; /* Center text */
-            padding: 0.5rem 1rem; /* py-2 px-4 */
-            font-size: 0.875rem; /* text-sm */
-            font-weight: 500; /* font-medium */
-            color: #4b5563; /* text-gray-600 */
-            background-color: #fff; /* bg-white */
-            cursor: pointer;
-            border-right: 1px solid #d1d5db; /* border-gray-300 */
-            transition: background-color 0.2s ease, color 0.2s ease;
-         }
-        .segmented-control label:last-child { border-right: none; }
-        .segmented-control input[type="radio"]:checked + label { background-color: #ecfdf5; /* emerald-50 */ color: #059669; /* emerald-600 */ }
-        .segmented-control label:hover { background-color: #f9fafb; /* gray-50 */ }
-        .segmented-control input[type="radio"]:focus + label { /* Optional: Add focus style */ box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3); z-index: 10; }
-
-        /* Ensure week commencing label occupies space */
-        #week-commencing-label {
-            min-height: 1.25rem; /* approx h-5 */
-        }
-
-        /* Autocomplete Styles */
-        .autocomplete-container { position: relative; }
+        /* Autocomplete */
         .autocomplete-results {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            z-index: 60; /* Above settings panel overlay */
-            background-color: white;
-            border: 1px solid #d1d5db; /* gray-300 */
-            border-top: none;
-            border-radius: 0 0 0.375rem 0.375rem; /* rounded-b-md */
-            max-height: 150px;
-            overflow-y: auto;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); /* shadow-md */
+            position: absolute; top: 100%; left: 0; right: 0; z-index: 60;
+            background-color: white; border: 1px solid #d1d5db; border-top: none; border-radius: 0 0 0.375rem 0.375rem;
+            max-height: 200px; overflow-y: auto; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
-        .autocomplete-item { padding: 0.5rem 0.75rem; font-size: 0.875rem; cursor: pointer; color: #374151; }
+        .autocomplete-item { padding: 0.75rem 1rem; font-size: 16px; cursor: pointer; color: #374151; border-bottom: 1px solid #f3f4f6; }
+        .autocomplete-item:last-child { border-bottom: none; }
         .autocomplete-item:hover, .autocomplete-item.is-active { background-color: #ecfdf5; color: #059669; }
-        .autocomplete-item strong { font-weight: 600; }
 
-        /* NEW: Toggle Switch Styles */
-        .toggle-bg:after { content: ''; position: absolute; top: 2px; left: 2px; background-color: white; border-radius: 9999px; width: 1.25rem; /* h-5 */ height: 1.25rem; /* w-5 */ transition: all 0.2s ease-in-out; }
-        input:checked + .toggle-bg { background-color: #10b981; /* emerald-500 */ }
-        input:checked + .toggle-bg:after { transform: translateX(100%); left: calc(100% - 2px); transform: translateX(-100%); }
-
+        /* Segmented Control */
+        .segmented-control { display: flex; width: 100%; border-radius: 0.5rem; overflow: hidden; border: 1px solid #d1d5db; }
+        .segmented-control label { flex: 1; text-align: center; padding: 0.75rem; font-size: 0.875rem; font-weight: 500; color: #4b5563; background-color: #fff; cursor: pointer; border-right: 1px solid #d1d5db; }
+        .segmented-control label:last-child { border-right: none; }
+        .segmented-control input:checked + label { background-color: #ecfdf5; color: #059669; }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen pb-10">
 
-    <nav class="bg-emerald-600 shadow-md"> <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <nav class="bg-white shadow-md sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <div class="flex-shrink-0 flex items-center">
-                        <span class="text-3xl" role="img" aria-label="Train">🚆</span>
-                        <span class="ml-3 text-xl font-bold text-white">DelayRepay Finder</span>
-                    </div>
+                    <svg class="h-8 w-8 text-emerald-600 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.125-.504 1.125-1.125V14.25m-17.25 4.5h12.75m-12.75 0V6.75A2.25 2.25 0 014.5 4.5h15A2.25 2.25 0 0121.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25m-17.25 0h.008v.008H3.375z" /></svg>
+                    <span class="ml-3 text-lg font-bold text-gray-800 truncate">DelayRepay Finder</span>
                 </div>
                 <div class="flex items-center">
-                     <button id="settings-toggle-button" type="button" class="p-2 rounded-md text-emerald-100 hover:text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                     <button id="settings-toggle-button" type="button" class="p-2 rounded-full text-gray-500 hover:bg-gray-100 active:bg-gray-200 transition">
                         <span class="sr-only">Open settings</span>
-                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                      </button>
                 </div>
             </div>
         </div>
     </nav>
 
-     <div id="settings-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden opacity-0 transition-opacity duration-300 ease-in-out"></div>
+     <!-- Settings Panel (Initially Hidden) -->
+    <div id="settings-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden opacity-0 transition-opacity duration-300 ease-in-out"></div>
     <div id="settings-panel" class="fixed top-0 right-0 bottom-0 w-80 bg-white shadow-xl z-50 transform translate-x-full transition-all duration-300 ease-in-out flex flex-col">
         
+        <!-- Header -->
         <div id="settings-header">
             <h2 class="text-xl font-semibold text-gray-800">Settings</h2>
             <button id="close-settings-button" type="button" class="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500">
@@ -262,7 +104,9 @@
             </button>
         </div>
         
+        <!-- Main Scrollable Content -->
         <div id="settings-content" class="flex-grow">
+             <!-- Group 1: Ticket Price Input -->
              <div class="border border-gray-200 rounded-lg p-4">
                  <h3 class="text-md font-medium text-gray-900 mb-3">Ticket Settings</h3>
                  <div>
@@ -273,36 +117,54 @@
                     </div>
                  </div>
              </div>
-              <div class="border border-gray-200 rounded-lg p-4">
+              <!-- Group 2: Station Inputs with Autocomplete -->
+             <div class="border border-gray-200 rounded-lg p-4">
                  <h3 class="text-md font-medium text-gray-900 mb-4">Journey Settings</h3>
                  <div class="space-y-4">
+                     <!-- Outbound From -->
                      <div class="autocomplete-container">
                         <label for="setting-outbound-from" class="block text-xs font-medium text-gray-600">Outbound From</label>
-                        <input type="text" id="setting-outbound-from" data-crs-code="DID" value="Didcot Parkway [DID]" autocomplete="off" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                        <input type="text" id="setting-outbound-from" data-crs-code="DID" value="Didcot Parkway [DID]" autocomplete="off" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm p-2">
                         <div class="autocomplete-results hidden" id="results-setting-outbound-from"></div>
-                        <input type="hidden" id="setting-outbound-from-code" value="DID"> </div>
+                        <input type="hidden" id="setting-outbound-from-code" value="DID"> <!-- Hidden input for CRS code -->
+                     </div>
+                     <!-- Outbound To -->
                      <div class="autocomplete-container">
                         <label for="setting-outbound-to" class="block text-xs font-medium text-gray-600">Outbound To</label>
-                        <input type="text" id="setting-outbound-to" data-crs-code="PAD" value="London Paddington [PAD]" autocomplete="off" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                        <input type="text" id="setting-outbound-to" data-crs-code="PAD" value="London Paddington [PAD]" autocomplete="off" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm p-2">
                          <div class="autocomplete-results hidden" id="results-setting-outbound-to"></div>
                         <input type="hidden" id="setting-outbound-to-code" value="PAD">
                      </div>
+                     <!-- Inbound From -->
                      <div class="autocomplete-container">
                         <label for="setting-inbound-from" class="block text-xs font-medium text-gray-600">Inbound From</label>
-                        <input type="text" id="setting-inbound-from" data-crs-code="PAD" value="London Paddington [PAD]" autocomplete="off" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                        <input type="text" id="setting-inbound-from" data-crs-code="PAD" value="London Paddington [PAD]" autocomplete="off" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm p-2">
                          <div class="autocomplete-results hidden" id="results-setting-inbound-from"></div>
                          <input type="hidden" id="setting-inbound-from-code" value="PAD">
                      </div>
+                     <!-- Inbound To -->
                      <div class="autocomplete-container">
                         <label for="setting-inbound-to" class="block text-xs font-medium text-gray-600">Inbound To</label>
-                        <input type="text" id="setting-inbound-to" data-crs-code="DID" value="Didcot Parkway [DID]" autocomplete="off" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                        <input type="text" id="setting-inbound-to" data-crs-code="DID" value="Didcot Parkway [DID]" autocomplete="off" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm p-2">
                          <div class="autocomplete-results hidden" id="results-setting-inbound-to"></div>
                          <input type="hidden" id="setting-inbound-to-code" value="DID">
                      </div>
                  </div>
              </div>
+             <!-- Group 3: Search History -->
+             <div class="border border-gray-200 rounded-lg p-4">
+                 <div class="flex justify-between items-center mb-3">
+                     <h3 class="text-md font-medium text-gray-900">Search History</h3>
+                     <button id="clear-history-button" type="button" class="text-xs font-medium text-emerald-600 hover:text-emerald-800">Clear</button>
+                 </div>
+                 <div id="search-history-list" class="space-y-1">
+                     <!-- History items will be injected here -->
+                     <div class="history-item is-empty">No history found.</div>
+                 </div>
              </div>
+        </div>
         
+        <!-- Footer with Save/Load Buttons -->
         <div id="settings-footer">
              <p class="text-xs text-gray-500 mb-3">Settings are saved in your browser.</p>
              <div class="flex space-x-3">
@@ -313,8 +175,10 @@
     </div>
 
 
+    <!-- Main Content Area -->
     <main class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
 
+        <!-- Section 1: Search Form Card -->
         <div class="bg-white rounded-xl shadow-lg p-6 sm:p-8">
             <h1 class="text-2xl font-semibold text-gray-900 mb-1">Journey Search</h1>
             <p class="text-gray-500 text-sm mb-8">
@@ -323,10 +187,13 @@
 
             <form id="search-form" class="space-y-8">
 
-				<div class="border border-gray-200 rounded-lg p-5">
+                <!-- Group 1: Date & Search Type -->
+                <div class="border border-gray-200 rounded-lg p-5">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Search Period</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-5 sm:gap-6 items-end">
-                        <fieldset class="mb-4 sm:mb-0 sm:col-span-2"> <legend class="block text-sm font-medium text-gray-700 mb-2">Search by:</legend>
+                    <div class="flex flex-col sm:flex-row sm:items-end sm:gap-6">
+                        <!-- Search Type -->
+                        <fieldset class="mb-4 sm:mb-0 sm:w-auto">
+                             <legend class="block text-sm font-medium text-gray-700 mb-2">Search by:</legend>
                              <div class="segmented-control">
                                 <input id="search-type-week" name="search-type" type="radio" value="week" checked>
                                 <label for="search-type-week">Week</label>
@@ -335,7 +202,9 @@
                             </div>
                         </fieldset>
 
-                        <div class="sm:col-span-3"> <label for="date-picker" id="date-picker-label" class="block text-sm font-medium text-gray-700 mb-1">Select Week</label>
+                        <!-- Date Picker -->
+                        <div class="flex-grow">
+                            <label for="date-picker" id="date-picker-label" class="block text-sm font-medium text-gray-700 mb-1">Select Week</label>
                             <div class="icon-input-container">
                                 <svg class="icon h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
                                 <input type="date" id="date-picker" class="icon-input block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500" required>
@@ -346,6 +215,7 @@
                 </div>
 
 
+                 <!-- Group 2: Days in Office (Initially Visible) -->
                  <div id="days-in-office-group" class="border border-gray-200 rounded-lg p-5">
                     <h3 class="text-lg font-medium text-gray-900 mb-1">Days in Office</h3>
                     <p class="text-sm text-gray-500 mb-4">Select the days you travelled.</p>
@@ -369,72 +239,88 @@
                                 <label for="day-thu" class="ml-2 block text-sm font-medium text-gray-700">Thursday</label>
                             </div>
                             <div class="flex items-center">
-                                <input id="day-fri" name="daysInOffice" type="checkbox" value="5" class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"> <label for="day-fri" class="ml-2 block text-sm font-medium text-gray-700">Friday</label>
+                                <input id="day-fri" name="daysInOffice" type="checkbox" value="5" class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"> <!-- Friday unchecked -->
+                                <label for="day-fri" class="ml-2 block text-sm font-medium text-gray-700">Friday</label>
                             </div>
                         </div>
                     </fieldset>
                 </div>
 
 
-                <div class="border border-gray-200 rounded-lg p-5">
+                <!-- Group 3: Journey Times -->
+                 <div class="border border-gray-200 rounded-lg p-5">
                      <h3 class="text-lg font-medium text-gray-900 mb-4">Journey Times</h3>
+                    <!-- Outbound -->
                     <div class="mb-6">
-                        <h4 class="flex justify-between items-center mb-1">
-                            <span class="text-md font-medium text-gray-800">
-                                Outbound (Work) <span id="outbound-stations-label" class="text-xs text-gray-500 font-normal"></span>
-                            </span>
-                            <button type="button" id="change-outbound-journey" class="text-xs font-medium text-emerald-600 hover:text-emerald-800 focus:outline-none">Change</button>
-                        </h4>
+                        <h4 class="text-md font-medium text-gray-800 mb-1">Outbound (Work) <span id="outbound-stations-label" class="text-xs text-gray-500 font-normal"></span></h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                             <div>
-                                <label for="from-time-outbound" class="block text-sm font-medium text-gray-700">From Time</label>
-                                <input type="time" id="from-time-outbound" value="07:00" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                                <div class="flex justify-between items-center">
+                                    <label for="from-time-outbound" class="block text-sm font-medium text-gray-700">From Time</label>
+                                    <span id="from-time-label-outbound" class="text-sm font-semibold text-emerald-600">07:00</span>
+                                </div>
+                                <input type="range" id="from-time-outbound" min="0" max="47" value="14" step="1" class="mt-2 w-full">
                             </div>
                             <div>
-                                <label for="to-time-outbound" class="block text-sm font-medium text-gray-700">To Time</label>
-                                <input type="time" id="to-time-outbound" value="07:30" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                                <div class="flex justify-between items-center">
+                                    <label for="to-time-outbound" class="block text-sm font-medium text-gray-700">To Time</label>
+                                    <span id="to-time-label-outbound" class="text-sm font-semibold text-emerald-600">07:30</span>
+                                </div>
+                                <input type="range" id="to-time-outbound" min="0" max="47" value="15" step="1" class="mt-2 w-full">
                             </div>
                         </div>
                     </div>
-                    <div>
-                         <h4 class="flex justify-between items-center mb-1">
-                            <span class="text-md font-medium text-gray-800">
-                                Inbound (Home) <span id="inbound-stations-label" class="text-xs text-gray-500 font-normal"></span>
-                            </span>
-                             <button type="button" id="change-inbound-journey" class="text-xs font-medium text-emerald-600 hover:text-emerald-800 focus:outline-none">Change</button>
-                        </h4>
+                    <!-- Inbound -->
+                     <div>
+                        <h4 class="text-md font-medium text-gray-800 mb-1">Inbound (Home) <span id="inbound-stations-label" class="text-xs text-gray-500 font-normal"></span></h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                              <div>
-                                <label for="from-time-inbound" class="block text-sm font-medium text-gray-700">From Time</label>
-                                <input type="time" id="from-time-inbound" value="17:00" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                                <div class="flex justify-between items-center">
+                                    <label for="from-time-inbound" class="block text-sm font-medium text-gray-700">From Time</label>
+                                    <span id="from-time-label-inbound" class="text-sm font-semibold text-emerald-600">17:00</span>
+                                </div>
+                                <input type="range" id="from-time-inbound" min="0" max="47" value="34" step="1" class="mt-2 w-full">
                             </div>
                             <div>
-                                <label for="to-time-inbound" class="block text-sm font-medium text-gray-700">To Time</label>
-                                <input type="time" id="to-time-inbound" value="17:30" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                                <div class="flex justify-between items-center">
+                                    <label for="to-time-inbound" class="block text-sm font-medium text-gray-700">To Time</label>
+                                    <span id="to-time-label-inbound" class="text-sm font-semibold text-emerald-600">17:30</span>
+                                </div>
+                                <input type="range" id="to-time-inbound" min="0" max="47" value="35" step="1" class="mt-2 w-full">
                             </div>
                         </div>
                     </div>
                 </div>
 
-                 <div class="pt-6 flex justify-between items-center min-h-[4rem]"> <div id="status-loading-container" class="flex items-center flex-grow mr-4"> <div id="loading" class="hidden items-center">
+                 <!-- Submit Button & Loader Area (Moved Below Form Groups) -->
+                <div class="pt-6 flex justify-between items-center min-h-[4rem]"> <!-- Ensure minimum height -->
+                     <!-- Status & Loading (Moved Left) -->
+                     <div id="status-loading-container" class="flex items-center flex-grow mr-4"> <!-- Container for status/loading -->
+                         <div id="loading" class="hidden items-center">
                             <div class="relative w-8 h-8">
                                 <svg class="w-full h-full" viewBox="0 0 36 36"><path class="text-gray-200" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3.8" /><path id="progress-ring" class="text-emerald-500 progress-ring" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3.8" stroke-dasharray="100, 100" stroke-dashoffset="100" /></svg>
                             </div>
                             <span id="loading-message" class="ml-2 text-sm text-gray-600">Fetching...</span>
                         </div>
-                         <div id="status-message" class="text-sm text-left"></div> </div>
+                         <div id="status-message" class="text-sm text-left"></div> <!-- Status message aligned left -->
+                     </div>
 
-                    <button type="submit" id="submit-button" class="bg-emerald-600 text-white py-2.5 px-6 rounded-md shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition duration-150 ease-in-out flex-shrink-0"> Check Performance
+                    <!-- Submit Button (Moved Right) -->
+                    <button type="submit" id="submit-button" class="bg-emerald-600 text-white py-2.5 px-6 rounded-md shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition duration-150 ease-in-out flex-shrink-0"> <!-- Prevent button shrinking -->
+                        Check Performance
                     </button>
                 </div>
             </form>
 
-             <div id="skeleton-loader" class="mt-10 hidden space-y-8">
+             <!-- Skeleton Loaders (Initially Hidden) -->
+            <div id="skeleton-loader" class="mt-10 hidden space-y-8">
+                 <!-- Skeleton KPIs -->
                  <div class="space-y-4">
                     <div class="h-4 bg-gray-200 rounded w-1/4 skeleton"></div>
-                    <div class="space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="skeleton skeleton-kpi-large"></div>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                        <div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            <div class="skeleton skeleton-kpi-small"></div>
                             <div class="skeleton skeleton-kpi-small"></div>
                             <div class="skeleton skeleton-kpi-small"></div>
                             <div class="skeleton skeleton-kpi-small"></div>
@@ -443,15 +329,18 @@
                         </div>
                     </div>
                 </div>
+                 <!-- Skeleton Table -->
                  <div class="space-y-4">
                      <div class="h-4 bg-gray-200 rounded w-1/3 skeleton"></div>
                      <div class="bg-white rounded-lg shadow-lg overflow-hidden p-4 space-y-2"> <div class="skeleton skeleton-table-head"></div> <div class="skeleton skeleton-table-row"></div> <div class="skeleton skeleton-table-row"></div> <div class="skeleton skeleton-table-row"></div> <div class="skeleton skeleton-table-footer"></div> </div>
                  </div>
+                 <!-- Repeat Skeleton KPIs/Table -->
                  <div class="space-y-4">
                     <div class="h-4 bg-gray-200 rounded w-1/4 skeleton"></div>
-                     <div class="space-y-6">
+                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="skeleton skeleton-kpi-large"></div>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                        <div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            <div class="skeleton skeleton-kpi-small"></div>
                             <div class="skeleton skeleton-kpi-small"></div>
                             <div class="skeleton skeleton-kpi-small"></div>
                             <div class="skeleton skeleton-kpi-small"></div>
@@ -469,71 +358,91 @@
 
         </div>
 
+        <!-- Section 2: Results Area (Initially Hidden with transition) -->
         <div id="results-area" class="mt-10 opacity-0 transition-opacity duration-500 ease-in-out">
 
-            <h2 id="in-office-summary-heading" class="text-xl font-semibold text-gray-900 mb-4">In-Office Summary</h2>
-            <div class="space-y-6"> <div class="kpi-widget-small p-5"> <div class="kpi-widget-content"> <dt class="kpi-widget-label text-base">Total Est. Refund</dt> <dd id="total-refund-kpi-office" class="kpi-widget-value text-4xl">£0.00</dd> </div>
+            <!-- In-Office KPI Summary Dashboard -->
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">In-Office Summary</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6"> <!-- Main grid -->
+                <!-- Large Refund Card -->
+                <div class="lg:col-span-1 kpi-card-large">
+                    <div>
+                        <div class="kpi-card-large-label">
+                            <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.25 7.756a4.5 4.5 0 100 8.488M7.5 10.5h5.25m-5.25 3h5.25M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            Total Est. Refund
+                        </div>
+                        <div id="total-refund-kpi-office" class="kpi-card-large-value">£0.00</div>
+                    </div>
                 </div>
-
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                    <div class="kpi-widget-small variant-amber">
-                        <div class="kpi-widget-icon">
-                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                <!-- Grid for smaller KPIs -->
+                <div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    <!-- Total -->
+                    <div class="kpi-widget-small">
+                        <div class="kpi-widget-icon bg-emerald-100">
+                             <svg class="h-5 w-5 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.125-.504 1.125-1.125V14.25m-17.25 4.5h12.75m-12.75 0V6.75A2.25 2.25 0 014.5 4.5h15A2.25 2.25 0 0121.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25m-17.25 0h.008v.008H3.375z" /></svg>
                         </div>
                          <div class="kpi-widget-content">
-                            <dt class="kpi-widget-label">Short Delay</dt>
-                            <dd id="delayed-15-29-office" class="kpi-widget-value">0</dd>
+                            <dt class="kpi-widget-label">Total</dt>
+                            <dd id="total-journeys-kpi-office" class="kpi-widget-value">0</dd>
                         </div>
                     </div>
-                    <div class="kpi-widget-small variant-orange">
-                        <div class="kpi-widget-icon">
-                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                    <!-- 15-29 -->
+                    <div class="kpi-widget-small">
+                        <div class="kpi-widget-icon bg-amber-100">
+                            <svg class="h-5 w-5 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
                         </div>
                          <div class="kpi-widget-content">
-                            <dt class="kpi-widget-label">Medium Delay</dt>
-                            <dd id="delayed-30-59-office" class="kpi-widget-value">0</dd>
+                            <dt class="kpi-widget-label">15-29m</dt>
+                            <dd id="delayed-15-29-office" class="kpi-widget-value is-delayed">0</dd>
                         </div>
                     </div>
-                    <div class="kpi-widget-small variant-red">
-                        <div class="kpi-widget-icon">
-                             <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                    <!-- 30-59 -->
+                     <div class="kpi-widget-small">
+                        <div class="kpi-widget-icon bg-orange-100">
+                            <svg class="h-5 w-5 text-orange-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
                         </div>
                          <div class="kpi-widget-content">
-                            <dt class="kpi-widget-label">Long Delay</dt>
-                            <dd id="delayed-60-119-office" class="kpi-widget-value">0</dd>
+                            <dt class="kpi-widget-label">30-59m</dt>
+                            <dd id="delayed-30-59-office" class="kpi-widget-value is-delayed-medium">0</dd>
                         </div>
                     </div>
-                     <div class="kpi-widget-small variant-red-dark">
-                        <div class="kpi-widget-icon">
-                             <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                    <!-- 60-119 -->
+                     <div class="kpi-widget-small">
+                        <div class="kpi-widget-icon bg-red-100">
+                             <svg class="h-5 w-5 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
                         </div>
                          <div class="kpi-widget-content">
-                            <dt class="kpi-widget-label">Severe Delay</dt>
-                            <dd id="delayed-120-plus-office" class="kpi-widget-value">0</dd>
+                            <dt class="kpi-widget-label">60-119m</dt>
+                            <dd id="delayed-60-119-office" class="kpi-widget-value is-delayed-high">0</dd>
                         </div>
                     </div>
-                    <div class="kpi-widget-small variant-red-dark">
-                        <div class="kpi-widget-icon">
-                             <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                     <!-- 120+ -->
+                     <div class="kpi-widget-small">
+                        <div class="kpi-widget-icon bg-red-200">
+                             <svg class="h-5 w-5 text-red-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                        </div>
+                         <div class="kpi-widget-content">
+                            <dt class="kpi-widget-label">120m+</dt>
+                            <dd id="delayed-120-plus-office" class="kpi-widget-value is-delayed-high">0</dd>
+                        </div>
+                    </div>
+                    <!-- Cancelled -->
+                     <div class="kpi-widget-small">
+                        <div class="kpi-widget-icon bg-red-200">
+                             <svg class="h-5 w-5 text-red-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
                         </div>
                          <div class="kpi-widget-content">
                             <dt class="kpi-widget-label">Cancelled</dt>
-                            <dd id="cancelled-kpi-office" class="kpi-widget-value">0</dd>
+                            <dd id="cancelled-kpi-office" class="kpi-widget-value is-cancelled">0</dd>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- In-Office Results Table Card -->
             <div class="mt-8 bg-white rounded-xl shadow-lg overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                    <h2 id="in-office-table-heading" class="text-xl font-semibold text-gray-900">In-Office Journey Details</h2>
-                    <div class="flex items-center">
-                        <span class="text-sm font-medium text-gray-600 mr-3">Show delays only</span>
-                        <label for="toggle-office-delays" class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="toggle-office-delays" class="sr-only">
-                            <div class="toggle-bg w-11 h-6 bg-gray-200 rounded-full transition-colors ease-in-out duration-200"></div>
-                        </label>
-                    </div>
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-900">In-Office Journey Details</h2>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full" id="results-table-office">
@@ -549,77 +458,99 @@
                             </tr>
                         </thead>
                         <tbody id="results-body-office" class="bg-white divide-y divide-gray-200">
-                            </tbody>
+                            <!-- Rows will be injected here -->
+                        </tbody>
                     </table>
                      <p id="no-office-results" class="hidden text-center text-gray-500 py-6 text-sm">No journeys found for selected in-office days.</p>
                 </div>
-                 </div>
-
-
-            <h2 id="other-weekdays-summary-heading" class="text-xl font-semibold text-gray-900 mt-10 mb-4">Other Weekdays Summary</h2>
-             <div id="other-weekdays-kpi-grid" class="space-y-6"> <div class="kpi-widget-small variant-slate p-5"> <div class="kpi-widget-content"> <dt class="kpi-widget-label text-base">Total Est. Refund</dt> <dd id="total-refund-kpi-other" class="kpi-widget-value text-4xl">£0.00</dd> </div>
+                 <!-- Table Search Footer -->
+                <div class="px-6 py-3 border-t border-gray-200 bg-slate-50">
+                    <input type="text" id="office-table-search" placeholder="Filter results..." class="block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm">
                 </div>
-                
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                     <div class="kpi-widget-small variant-slate">
-                        <div class="kpi-widget-icon">
-                             <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+            </div>
+
+             <!-- Other Weekdays KPI Summary Dashboard (ID added) -->
+            <h2 id="other-weekdays-summary-heading" class="text-xl font-semibold text-gray-900 mt-10 mb-4">Other Weekdays Summary</h2>
+             <div id="other-weekdays-kpi-grid" class="grid grid-cols-1 lg:grid-cols-3 gap-6"> <!-- Main grid -->
+                 <!-- Large Refund Card -->
+                <div class="lg:col-span-1 kpi-card-large bg-slate-700"> <!-- Different color for 'other' -->
+                    <div>
+                        <div class="kpi-card-large-label text-slate-300">
+                            <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.25 7.756a4.5 4.5 0 100 8.488M7.5 10.5h5.25m-5.25 3h5.25M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            Total Est. Refund
+                        </div>
+                        <div id="total-refund-kpi-other" class="kpi-card-large-value text-white">£0.00</div>
+                    </div>
+                </div>
+                <!-- Grid for smaller KPIs -->
+                <div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                     <!-- Total -->
+                    <div class="kpi-widget-small">
+                        <div class="kpi-widget-icon bg-slate-100">
+                             <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.125-.504 1.125-1.125V14.25m-17.25 4.5h12.75m-12.75 0V6.75A2.25 2.25 0 014.5 4.5h15A2.25 2.25 0 0121.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25m-17.25 0h.008v.008H3.375z" /></svg>
+                        </div>
+                         <div class="kpi-widget-content">
+                            <dt class="kpi-widget-label">Total</dt>
+                            <dd id="total-journeys-kpi-other" class="kpi-widget-value">0</dd>
+                        </div>
+                    </div>
+                    <!-- 15-29 -->
+                    <div class="kpi-widget-small">
+                        <div class="kpi-widget-icon bg-amber-100">
+                            <svg class="h-5 w-5 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                        </div>
+                         <div class="kpi-widget-content">
+                            <dt class="kpi-widget-label">15-29m</dt>
+                            <dd id="delayed-15-29-other" class="kpi-widget-value is-delayed">0</dd>
+                        </div>
+                    </div>
+                    <!-- 30-59 -->
+                     <div class="kpi-widget-small">
+                        <div class="kpi-widget-icon bg-orange-100">
+                            <svg class="h-5 w-5 text-orange-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                        </div>
+                         <div class="kpi-widget-content">
+                            <dt class="kpi-widget-label">30-59m</dt>
+                            <dd id="delayed-30-59-other" class="kpi-widget-value is-delayed-medium">0</dd>
+                        </div>
+                    </div>
+                    <!-- 60-119 -->
+                     <div class="kpi-widget-small">
+                        <div class="kpi-widget-icon bg-red-100">
+                             <svg class="h-5 w-5 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                        </div>
+                         <div class="kpi-widget-content">
+                            <dt class="kpi-widget-label">60-119m</dt>
+                            <dd id="delayed-60-119-other" class="kpi-widget-value is-delayed-high">0</dd>
+                        </div>
+                    </div>
+                     <!-- 120+ -->
+                     <div class="kpi-widget-small">
+                        <div class="kpi-widget-icon bg-red-200">
+                             <svg class="h-5 w-5 text-red-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                        </div>
+                         <div class="kpi-widget-content">
+                            <dt class="kpi-widget-label">120m+</dt>
+                            <dd id="delayed-120-plus-other" class="kpi-widget-value is-delayed-high">0</dd>
+                        </div>
+                    </div>
+                    <!-- Cancelled -->
+                     <div class="kpi-widget-small">
+                        <div class="kpi-widget-icon bg-red-200">
+                             <svg class="h-5 w-5 text-red-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
                         </div>
                          <div class="kpi-widget-content">
                             <dt class="kpi-widget-label">Cancelled</dt>
-                            <dd id="cancelled-kpi-other" class="kpi-widget-value">0</dd>
-                        </div>
-                    </div>
-                    <div class="kpi-widget-small variant-slate">
-                        <div class="kpi-widget-icon">
-                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
-                        </div>
-                         <div class="kpi-widget-content">
-                            <dt class="kpi-widget-label">Short Delay</dt>
-                            <dd id="delayed-15-29-other" class="kpi-widget-value">0</dd>
-                        </div>
-                    </div>
-                    <div class="kpi-widget-small variant-slate">
-                        <div class="kpi-widget-icon">
-                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
-                        </div>
-                         <div class="kpi-widget-content">
-                            <dt class="kpi-widget-label">Medium Delay</dt>
-                            <dd id="delayed-30-59-other" class="kpi-widget-value">0</dd>
-                        </div>
-                    </div>
-                    <div class="kpi-widget-small variant-slate">
-                        <div class="kpi-widget-icon">
-                             <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
-                        </div>
-                         <div class="kpi-widget-content">
-                            <dt class="kpi-widget-label">Long Delay</dt>
-                            <dd id="delayed-60-119-other" class="kpi-widget-value">0</dd>
-                        </div>
-                    </div>
-                     <div class="kpi-widget-small variant-slate">
-                        <div class="kpi-widget-icon">
-                             <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
-                        </div>
-                         <div class="kpi-widget-content">
-                            <dt class="kpi-widget-label">Severe Delay</dt>
-                            <dd id="delayed-120-plus-other" class="kpi-widget-value">0</dd>
+                            <dd id="cancelled-kpi-other" class="kpi-widget-value is-cancelled">0</dd>
                         </div>
                     </div>
                 </div>
             </div>
 
-
-            <div id="other-weekdays-table-card" class="mt-8 bg-white rounded-xl shadow-lg overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <!-- Other Weekday Results Table Card (ID added) -->
+             <div id="other-weekdays-table-card" class="mt-8 bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
                     <h2 class="text-xl font-semibold text-gray-900">Other Weekday Journey Details</h2>
-                     <div class="flex items-center">
-                        <span class="text-sm font-medium text-gray-600 mr-3">Show delays only</span>
-                        <label for="toggle-other-delays" class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="toggle-other-delays" class="sr-only">
-                            <div class="toggle-bg w-11 h-6 bg-gray-200 rounded-full transition-colors ease-in-out duration-200"></div>
-                        </label>
-                    </div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full" id="results-table-other">
@@ -632,15 +563,22 @@
                                 <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actual Arr.</th>
                                 <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delay</th>
                                 <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Refund</th>
+                                <!-- Reason column removed -->
                             </tr>
                         </thead>
                         <tbody id="results-body-other" class="bg-white divide-y divide-gray-200">
-                            </tbody>
+                            <!-- Rows will be injected here -->
+                        </tbody>
                     </table>
                     <p id="no-other-results" class="hidden text-center text-gray-500 py-6 text-sm">No journeys found for other weekdays.</p>
                 </div>
+                <!-- NEW Table Search Footer -->
+                <div class="px-6 py-3 border-t border-gray-200 bg-slate-50">
+                    <input type="text" id="other-table-search" placeholder="Filter results..." class="block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm">
                 </div>
+            </div>
 
+            <!-- Error Report Section (Initially Hidden with transition) -->
             <div id="error-report-area" class="mt-8 opacity-0 transition-opacity duration-500 ease-in-out hidden">
                 <div class="bg-white rounded-xl shadow-lg overflow-hidden">
                     <div class="px-6 py-4 border-b border-red-200 bg-red-50">
@@ -651,7 +589,8 @@
                             The following requests failed due to API rate limits. The data for these items may be incomplete or missing:
                         </p>
                         <ul id="error-list" class="list-disc list-inside space-y-1 text-sm text-red-700">
-                            </ul>
+                            <!-- Failed requests will be listed here -->
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -661,7 +600,81 @@
 
     </main>
 
-    <script src="config.js"></script> <script src="station_data.js"></script> <script>
+    <script src="config.js"></script> <!-- Load config first -->
+    <script src="station_data.js"></script> <!-- Load station data -->
+    <script>
+        // --- All JS Logic (Consolidated and Cleaned) ---
+        
+        // --- Utility Functions ---
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        const WEEKDAYS_MAP = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+        function getMonday(d) { d = new Date(d); let day = d.getDay(), diff = d.getDate() - day + (day == 0 ? -6 : 1); return new Date(d.setDate(diff)); }
+        function formatDateForAPI(date) { const y = date.getFullYear(), m = (date.getMonth() + 1).toString().padStart(2, '0'), d = date.getDate().toString().padStart(2, '0'); return `${y}-${m}-${d}`; }
+        function formatDateForDisplay(date) { return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); }
+        
+        // Update station labels in the main form based on settings
+         function updateJourneyLabels() {
+             outboundStationsLabel.textContent = `(${settingOutboundFromCode.value} → ${settingOutboundToCode.value})`;
+             inboundStationsLabel.textContent = `(${settingInboundFromCode.value} → ${settingInboundToCode.value})`;
+         }
+
+        // --- Price Input Formatting (Used by loadSettings) ---
+        // Note: ticketPriceInput is defined later, so we defer this until DOMContentLoaded or script execution flow.
+        // However, these are function definitions so they are hoisted or available.
+        // We need to be careful about ticketPriceInput access.
+        // We'll rely on ticketPriceInput being defined before these functions are CALLED.
+
+        function formatPriceInput() { 
+            if(!ticketPriceInput) return;
+            const inputVal = String(ticketPriceInput.value); 
+            const numValue = parseFloat(inputVal.replace(/[^0-9.]/g, '')) || 0; 
+            rawPriceValue = numValue; 
+            ticketPriceInput.value = '£' + numValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); 
+            ticketPriceInput.classList.add('is-formatted'); 
+        }
+        function unformatPriceInput() { 
+            if(!ticketPriceInput) return;
+            ticketPriceInput.value = rawPriceValue; 
+            ticketPriceInput.classList.remove('is-formatted'); 
+            ticketPriceInput.select(); 
+        }
+        function getRawTicketPrice() { 
+             if(!ticketPriceInput) return 0;
+            return parseFloat(String(ticketPriceInput.value).replace(/[^0-9.]/g, '')) || 0; 
+        }
+
+        // --- Settings Persistence (Must be available before the loadSettings call) ---
+
+        function loadSettings(isManual = false) {
+             const savedSettings = localStorage.getItem('railDelayFinderSettings');
+             if (savedSettings) {
+                 try {
+                     const settings = JSON.parse(savedSettings);
+                     if (settings.ticketPrice) { ticketPriceInput.value = settings.ticketPrice; formatPriceInput(); }
+                     if (settings.daysInOffice && Array.isArray(settings.daysInOffice)) { const savedDays = new Set(settings.daysInOffice); daysInOfficeCheckboxes.forEach(cb => { cb.checked = savedDays.has(cb.value); }); }
+                     settingOutboundFromCode.value = settings.outboundFrom || 'DID';
+                     settingOutboundFrom.value = settings.outboundFromDisplay || 'Didcot Parkway [DID]';
+                     settingOutboundToCode.value = settings.outboundTo || 'PAD';
+                     settingOutboundTo.value = settings.outboundToDisplay || 'London Paddington [PAD]';
+                     settingInboundFromCode.value = settings.inboundFrom || 'PAD';
+                     settingInboundFrom.value = settings.inboundFromDisplay || 'London Paddington [PAD]';
+                     settingInboundToCode.value = settings.inboundTo || 'DID';
+                     settingInboundTo.value = settings.inboundToDisplay || 'Didcot Parkway [DID]';
+                     updateJourneyLabels(); 
+                     if (isManual) showStatus('Settings loaded.', 'info');
+                 } catch (e) { console.error("Error loading settings:", e); showStatus('Could not load settings.', 'error'); }
+             } else {
+                  // Default Price Init
+                  rawPriceValue = 7437.92;
+                  if(ticketPriceInput) ticketPriceInput.value = rawPriceValue;
+                  formatPriceInput(); 
+                  updateJourneyLabels(); // Update labels with default stations
+                  if (isManual) showStatus('No saved settings found.', 'info');
+             }
+         }
+
+
         // --- Form Elements ---
         const searchForm = document.getElementById('search-form');
         const submitButton = document.getElementById('submit-button');
@@ -684,11 +697,6 @@
         const resultsBodyOther = document.getElementById('results-body-other');
         const noOfficeResultsMsg = document.getElementById('no-office-results');
         const noOtherResultsMsg = document.getElementById('no-other-results');
-        // REMOVED: table search inputs
-        // NEW: toggle switch inputs
-        const toggleOfficeDelays = document.getElementById('toggle-office-delays');
-        const toggleOtherDelays = document.getElementById('toggle-other-delays');
-
 
         // --- Error Report Elements ---
         const errorReportArea = document.getElementById('error-report-area');
@@ -700,6 +708,9 @@
         const daysInOfficeCheckboxes = document.querySelectorAll('input[name="daysInOffice"]');
         const ticketPriceInput = document.getElementById('ticket-price-settings');
         
+        // Variable to hold raw price value for formatting logic
+        let rawPriceValue = 7437.92; // Default
+
         // Station inputs from settings panel (DISPLAY inputs)
         const settingOutboundFrom = document.getElementById('setting-outbound-from');
         const settingOutboundTo = document.getElementById('setting-outbound-to');
@@ -714,22 +725,24 @@
         // Labels for station codes in main form
         const outboundStationsLabel = document.getElementById('outbound-stations-label');
         const inboundStationsLabel = document.getElementById('inbound-stations-label');
-        // NEW: Change journey buttons
-        const changeOutboundJourneyBtn = document.getElementById('change-outbound-journey');
-        const changeInboundJourneyBtn = document.getElementById('change-inbound-journey');
 
 
-        // UPDATED: Time Inputs (replaces sliders)
-        const fromTimeOutbound = document.getElementById('from-time-outbound');
-        const toTimeOutbound = document.getElementById('to-time-outbound');
-        const fromTimeInbound = document.getElementById('from-time-inbound');
-        const toTimeInbound = document.getElementById('to-time-inbound');
+        // Outbound Sliders
+        const fromTimeSliderOutbound = document.getElementById('from-time-outbound');
+        const toTimeSliderOutbound = document.getElementById('to-time-outbound');
+        const fromTimeLabelOutbound = document.getElementById('from-time-label-outbound');
+        const toTimeLabelOutbound = document.getElementById('to-time-label-outbound');
 
+        // Inbound Sliders
+        const fromTimeSliderInbound = document.getElementById('from-time-inbound');
+        const toTimeSliderInbound = document.getElementById('to-time-inbound');
+        const fromTimeLabelInbound = document.getElementById('from-time-label-inbound');
+        const toTimeLabelInbound = document.getElementById('to-time-label-inbound');
 
         // --- KPI Elements ---
         const resultsArea = document.getElementById('results-area');
         // Office KPIs
-        // const totalJourneysKPIOffice = document.getElementById('total-journeys-kpi-office'); // REMOVED
+        const totalJourneysKPIOffice = document.getElementById('total-journeys-kpi-office');
         const cancelledKPIOffice = document.getElementById('cancelled-kpi-office');
         const delayed1529Office = document.getElementById('delayed-15-29-office');
         const delayed3059Office = document.getElementById('delayed-30-59-office');
@@ -737,7 +750,7 @@
         const delayed120PlusOffice = document.getElementById('delayed-120-plus-office');
         const totalRefundKPIOffice = document.getElementById('total-refund-kpi-office');
         // Other KPIs
-        // const totalJourneysKPIOther = document.getElementById('total-journeys-kpi-other'); // REMOVED
+        const totalJourneysKPIOther = document.getElementById('total-journeys-kpi-other');
         const cancelledKPIOther = document.getElementById('cancelled-kpi-other');
         const delayed1529Other = document.getElementById('delayed-15-29-other');
         const delayed3059Other = document.getElementById('delayed-30-59-other');
@@ -748,73 +761,15 @@
         const otherWeekdaysSummaryHeading = document.getElementById('other-weekdays-summary-heading');
         const otherWeekdaysKpiGrid = document.getElementById('other-weekdays-kpi-grid');
         const otherWeekdaysTableCard = document.getElementById('other-weekdays-table-card');
-        // NEW: Dynamic Heading IDs
-        const inOfficeSummaryHeading = document.getElementById('in-office-summary-heading');
-        const inOfficeTableHeading = document.getElementById('in-office-table-heading');
-
 
         // --- Loader Element ---
         const progressRing = document.getElementById('progress-ring');
         const circumference = 2 * Math.PI * 15.9155; // Radius of the circle
         progressRing.style.strokeDashoffset = circumference;
-        
+
         // --- Utility ---
-        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-        const WEEKDAYS_MAP = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]; // Match getDay() output
-        
-        // --- Core Helper Functions (Moved to Top for Execution Order) ---
-
-        function getMonday(d) { d = new Date(d); let day = d.getDay(), diff = d.getDate() - day + (day == 0 ? -6 : 1); return new Date(d.setDate(diff)); }
-        function formatDateForAPI(date) { const y = date.getFullYear(), m = (date.getMonth() + 1).toString().padStart(2, '0'), d = date.getDate().toString().padStart(2, '0'); return `${y}-${m}-${d}`; }
-        function formatDateForDisplay(date) { return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); }
-        
-        // Update station labels in the main form based on settings
-         function updateJourneyLabels() {
-             outboundStationsLabel.textContent = `(${settingOutboundFromCode.value} → ${settingOutboundToCode.value})`;
-             inboundStationsLabel.textContent = `(${settingInboundFromCode.value} → ${settingInboundToCode.value})`;
-         }
-
-        // --- Price Input Formatting (Used by loadSettings) ---
-        let rawPriceValue = parseFloat(String(ticketPriceInput.value).replace(/[^0-9.]/g, '')) || 0; // Initialize raw value
-        function formatPriceInput() { const inputVal = String(ticketPriceInput.value); const numValue = parseFloat(inputVal.replace(/[^0-9.]/g, '')) || 0; rawPriceValue = numValue; ticketPriceInput.value = '£' + numValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); ticketPriceInput.classList.add('is-formatted'); }
-        function unformatPriceInput() { ticketPriceInput.value = rawPriceValue; ticketPriceInput.classList.remove('is-formatted'); ticketPriceInput.select(); }
-        function getRawTicketPrice() { return parseFloat(String(ticketPriceInput.value).replace(/[^0-9.]/g, '')) || 0; } // Parse current value
-
-
-        // --- Settings Persistence (Must be available before the loadSettings call) ---
-
-        function loadSettings(isManual = false) {
-             const savedSettings = localStorage.getItem('railDelayFinderSettings');
-             if (savedSettings) {
-                 try {
-                     const settings = JSON.parse(savedSettings);
-                     if (settings.ticketPrice) { ticketPriceInput.value = settings.ticketPrice; formatPriceInput(); }
-                     if (settings.daysInOffice && Array.isArray(settings.daysInOffice)) { const savedDays = new Set(settings.daysInOffice); daysInOfficeCheckboxes.forEach(cb => { cb.checked = savedDays.has(cb.value); }); }
-                     settingOutboundFromCode.value = settings.outboundFrom || 'DID';
-                     settingOutboundFrom.value = settings.outboundFromDisplay || 'Didcot Parkway [DID]';
-                     settingOutboundToCode.value = settings.outboundTo || 'PAD';
-                     settingOutboundTo.value = settings.outboundToDisplay || 'London Paddington [PAD]';
-                     settingInboundFromCode.value = settings.inboundFrom || 'PAD';
-                     settingInboundFrom.value = settings.inboundFromDisplay || 'London Paddington [PAD]';
-                     settingInboundToCode.value = settings.inboundTo || 'DID';
-                     settingInboundTo.value = settings.inboundToDisplay || 'Didcot Parkway [DID]';
-                     
-                     // NEW: Load saved times into time inputs
-                     fromTimeOutbound.value = settings.fromTimeOutbound || '07:00';
-                     toTimeOutbound.value = settings.toTimeOutbound || '07:30';
-                     fromTimeInbound.value = settings.fromTimeInbound || '17:00';
-                     toTimeInbound.value = settings.toTimeInbound || '17:30';
-
-                     updateJourneyLabels(); 
-                     if (isManual) showStatus('Settings loaded.', 'info');
-                 } catch (e) { console.error("Error loading settings:", e); showStatus('Could not load settings.', 'error'); }
-             } else {
-                  formatPriceInput(); // Format default price if no settings
-                  updateJourneyLabels(); // Update labels with default stations
-                  if (isManual) showStatus('No saved settings found.', 'info');
-             }
-         }
-
+        // const wait = ... defined at top
+        // const WEEKDAYS_MAP = ... defined at top
 
         // --- Form Submission (Main Logic) ---
         searchForm.addEventListener('submit', async (e) => {
@@ -829,9 +784,11 @@
             showStatus('', 'info');
             resultsBodyOffice.innerHTML = ''; resultsBodyOther.innerHTML = '';
             noOfficeResultsMsg.classList.add('hidden'); noOtherResultsMsg.classList.add('hidden');
-            // UPDATED: Reset toggles instead of search bars (Set to TRUE for default ON)
-            toggleOfficeDelays.checked = true;
-            toggleOtherDelays.checked = true;
+            // Clear search inputs
+            const officeTableSearch = document.getElementById('office-table-search');
+            const otherTableSearch = document.getElementById('other-table-search');
+            if (officeTableSearch) officeTableSearch.value = '';
+            if (otherTableSearch) otherTableSearch.value = '';
 
             let allServices = []; let allRids = [];
             let failedRequests = [];
@@ -846,10 +803,9 @@
              const inboundFrom = settingInboundFromCode.value;
              const inboundTo = settingInboundToCode.value;
 
-            // NEW: Get times from time inputs and format them
-             const journeyTypes = [
-                 { type: "Outbound (Work)", from_loc: outboundFrom, to_loc: outboundTo, from_time: formatTimeForAPI(fromTimeOutbound.value), to_time: formatTimeForAPI(toTimeOutbound.value), label: "Outbound" },
-                 { type: "Inbound (Home)", from_loc: inboundFrom, to_loc: inboundTo, from_time: formatTimeForAPI(fromTimeInbound.value), to_time: formatTimeForAPI(toTimeInbound.value), label: "Inbound" }
+            const journeyTypes = [
+                 { type: "Outbound (Work)", from_loc: outboundFrom, to_loc: outboundTo, from_time: convertSliderValueToApiTime(fromTimeSliderOutbound.value), to_time: convertSliderValueToApiTime(toTimeSliderOutbound.value), label: "Outbound" },
+                 { type: "Inbound (Home)", from_loc: inboundFrom, to_loc: inboundTo, from_time: convertSliderValueToApiTime(fromTimeSliderInbound.value), to_time: convertSliderValueToApiTime(toTimeSliderInbound.value), label: "Inbound" }
              ];
 
 
@@ -930,22 +886,14 @@
                     const finalStatus = failedRequests.length > 0 ? `Finished. Found ${detailedServices.length} service(s), but some data missing.` : `Success! Found ${detailedServices.length} service(s).`;
                     showStatus(finalStatus, failedRequests.length > 0 ? 'warning' : 'success');
 
-                    detailedServices.sort((a, b) => { if (a.dateOfService < b.dateOfService) return -1; if (a.dateOfService > b.dateOfService) return 1; const typeA = a.journeyType.startsWith("Outbound") ? 0 : 1; const typeB = b.journeyType.startsWith("Outbound") ? 0 : 1; if (typeA < typeB) return -1; if (typeA < typeB) return 1; if (a.scheduledDeparture < b.scheduledDeparture) return -1; if (a.scheduledDeparture > b.scheduledDeparture) return 1; return 0; });
+                    detailedServices.sort((a, b) => { if (a.dateOfService < b.dateOfService) return -1; if (a.dateOfService > b.dateOfService) return 1; const typeA = a.journeyType.startsWith("Outbound") ? 0 : 1; const typeB = b.journeyType.startsWith("Outbound") ? 0 : 1; if (typeA < typeB) return -1; if (typeA > typeB) return 1; if (a.scheduledDeparture < b.scheduledDeparture) return -1; if (a.scheduledDeparture > b.scheduledDeparture) return 1; return 0; });
 
                     const officeServices = []; const otherServices = [];
 
                     // Filter based on search type
                     if (searchType === 'week') {
-                         // NEW: Reset headings for week search
-                         inOfficeSummaryHeading.textContent = 'In-Office Summary';
-                         inOfficeTableHeading.textContent = 'In-Office Journey Details';
-
                          detailedServices.forEach(service => { const [y, m, d] = service.dateOfService.split('-').map(Number); const serviceDate = new Date(Date.UTC(y, m - 1, d)); const day = serviceDate.getUTCDay(); if (officeDays.has(day)) officeServices.push(service); else otherServices.push(service); });
                     } else { // searchType === 'day' - all results go into 'office' for display
-                         // NEW: Set headings for day search
-                         inOfficeSummaryHeading.textContent = 'Day Summary';
-                         inOfficeTableHeading.textContent = 'Day Journey Details';
-                        
                          officeServices.push(...detailedServices);
                          // Hide the "Other Weekdays" section entirely
                          otherWeekdaysSummaryHeading.classList.add('hidden');
@@ -959,21 +907,31 @@
                         otherWeekdaysTableCard.classList.remove('hidden');
                      }
 
-                    // UPDATED: calculateKPIs function (removed total)
-                    const calculateKPIs = (services) => { let counts = { cancelled: 0, delayed_15_29: 0, delayed_30_59: 0, delayed_60_119: 0, delayed_120_plus: 0 }; let totalRefund = 0; services.forEach(s => { const cancelled = !s.actualArrival || s.actualArrival === ""; const delayMins = calculateDelay(s.scheduledArrival, s.actualArrival); const delayInfo = getDelayInfo(delayMins, s.actualArrival); if(cancelled) counts.cancelled++; else if (delayMins >= 120) counts.delayed_120_plus++; else if (delayMins >= 60) counts.delayed_60_119++; else if (delayMins >= 30) counts.delayed_30_59++; else if (delayMins >= 15) counts.delayed_15_29++; totalRefund += delayInfo.refund; }); return { counts, refund: totalRefund }; };
+
+                    const calculateKPIs = (services) => { let counts = { total: 0, cancelled: 0, delayed_15_29: 0, delayed_30_59: 0, delayed_60_119: 0, delayed_120_plus: 0 }; let totalRefund = 0; services.forEach(s => { counts.total++; const cancelled = !s.actualArrival || s.actualArrival === ""; const delayMins = calculateDelay(s.scheduledArrival, s.actualArrival); const delayInfo = getDelayInfo(delayMins, s.actualArrival); if(cancelled) counts.cancelled++; else if (delayMins >= 120) counts.delayed_120_plus++; else if (delayMins >= 60) counts.delayed_60_119++; else if (delayMins >= 30) counts.delayed_30_59++; else if (delayMins >= 15) counts.delayed_15_29++; totalRefund += delayInfo.refund; }); return { counts, refund: totalRefund }; };
 
                     const officeKPIs = calculateKPIs(officeServices);
                     const otherKPIs = calculateKPIs(otherServices);
 
-                    // UPDATED: Populate Office KPIs (removed total)
-                    cancelledKPIOffice.textContent = officeKPIs.counts.cancelled; delayed1529Office.textContent = officeKPIs.counts.delayed_15_29; delayed3059Office.textContent = officeKPIs.counts.delayed_30_59; delayed60119Office.textContent = officeKPIs.counts.delayed_60_119; delayed120PlusOffice.textContent = officeKPIs.counts.delayed_120_plus; totalRefundKPIOffice.textContent = `£${officeKPIs.refund.toFixed(2)}`;
-                    
-                    // UPDATED: Populate Other KPIs (removed total)
+                    // Populate Office KPIs
+                    totalJourneysKPIOffice.textContent = officeKPIs.counts.total; cancelledKPIOffice.textContent = officeKPIs.counts.cancelled; delayed1529Office.textContent = officeKPIs.counts.delayed_15_29; delayed3059Office.textContent = officeKPIs.counts.delayed_30_59; delayed60119Office.textContent = officeKPIs.counts.delayed_60_119; delayed120PlusOffice.textContent = officeKPIs.counts.delayed_120_plus; totalRefundKPIOffice.textContent = `£${officeKPIs.refund.toFixed(2)}`;
+                    // Populate Other KPIs (only if searching by week)
                     if(searchType === 'week') {
-                        cancelledKPIOther.textContent = otherKPIs.counts.cancelled; delayed1529Other.textContent = otherKPIs.counts.delayed_15_29; delayed3059Other.textContent = otherKPIs.counts.delayed_30_59; delayed60119Other.textContent = otherKPIs.counts.delayed_60_119; delayed120PlusOther.textContent = otherKPIs.counts.delayed_120_plus; totalRefundKPIOther.textContent = `£${otherKPIs.refund.toFixed(2)}`;
+                        totalJourneysKPIOther.textContent = otherKPIs.counts.total; cancelledKPIOther.textContent = otherKPIs.counts.cancelled; delayed1529Other.textContent = otherKPIs.counts.delayed_15_29; delayed3059Other.textContent = otherKPIs.counts.delayed_30_59; delayed60119Other.textContent = otherKPIs.counts.delayed_60_119; delayed120PlusOther.textContent = otherKPIs.counts.delayed_120_plus; totalRefundKPIOther.textContent = `£${otherKPIs.refund.toFixed(2)}`;
                     }
+
+                    // --- Save to History ---
+                    let searchLabel = "";
+                     if (searchType === 'week') {
+                         searchLabel = `w/c ${formatDateForAPI(getMonday(new Date(datePicker.value)))}`;
+                     } else {
+                         searchLabel = `Day ${formatDateForAPI(new Date(datePicker.value))}`;
+                     }
+                     const totalRefund = officeKPIs.refund + (searchType === 'week' ? otherKPIs.refund : 0);
+                     if (detailedServices.length > 0 || failedRequests.length > 0) {
+                         saveSearchToHistory(searchLabel, totalRefund);
+                     }
                     
-                    // --- REMOVED: Save to History ---
 
                     resultsArea.classList.remove('hidden'); setTimeout(() => resultsArea.classList.remove('opacity-0'), 50);
                     displayResults(officeServices, resultsBodyOffice, noOfficeResultsMsg);
@@ -992,13 +950,7 @@
         // --- Table Display ---
         function displayResults(services, tableBody, noResultsElement) {
             tableBody.innerHTML = ''; // Clear
-            if (services.length === 0) { 
-                // UPDATED: Reset no results text
-                noResultsElement.textContent = noResultsElement.id === 'no-office-results' ? 'No journeys found for selected in-office days.' : 'No journeys found for other weekdays.';
-                noResultsElement.classList.remove('hidden'); 
-                tableBody.closest('table').classList.add('hidden'); 
-                return; 
-            }
+            if (services.length === 0) { noResultsElement.classList.remove('hidden'); tableBody.closest('table').classList.add('hidden'); return; }
             noResultsElement.classList.add('hidden'); tableBody.closest('table').classList.remove('hidden');
 
             services.forEach(service => {
@@ -1007,6 +959,10 @@
                 const delayInfo = getDelayInfo(delayMinutes, service.actualArrival);
                 const actualArrivalDisplay = isCancelled ? '<span class="text-danger font-semibold">Cancelled</span>' : formatTime(service.actualArrival);
                 
+                // REMOVED reason lookup logic
+                // const shortReason = ' '; 
+                // const fullReason = ''; 
+
                 const row = document.createElement('tr'); row.className = 'hover:bg-slate-100 transition-colors duration-150';
                 row.innerHTML = `
                     <td class="py-3 px-6 whitespace-nowrap text-sm text-gray-700">${service.dateOfService}</td>
@@ -1014,15 +970,11 @@
                     <td class="py-3 px-6 whitespace-nowrap text-sm text-gray-700">${formatTime(service.scheduledDeparture)}</td>
                     <td class="py-3 px-6 whitespace-nowrap text-sm text-gray-700">${formatTime(service.scheduledArrival)}</td>
                     <td class="py-3 px-6 whitespace-nowrap text-sm ${delayInfo.style}">${actualArrivalDisplay}</td>
-                    <td class="py-3 px-6 whitespace-nowrap text-sm ${delayInfo.style}">${delayInfo.category} ${delayInfo.category !== 'Cancelled' && delayInfo.category !== 'On Time' ? `(${delayMinutes}m)`: ''}</td>
+                    <td class="py-3 px-6 whitespace-nowrap text-sm ${delayInfo.style}">${delayInfo.category} ${delayInfo.category !== 'Cancelled' ? `(${delayMinutes}m)`: ''}</td>
                     <td class="py-3 px-6 whitespace-nowrap text-sm ${delayInfo.style}">£${delayInfo.refund.toFixed(2)}</td>
+                    <!-- Reason cell removed -->
                 `; tableBody.appendChild(row);
             });
-            
-            // UPDATED: Reset toggles to ON and apply delay filter
-            const toggle = tableBody.id === 'results-body-office' ? toggleOfficeDelays : toggleOtherDelays;
-            toggle.checked = true; // Reset toggle to "on" (default)
-            filterTableByDelay(tableBody, true); // Apply "show delays only" filter
         }
 
 
@@ -1030,85 +982,102 @@
         function displayFailedRequests(failures) { errorList.innerHTML = ''; failures.forEach(msg => { const li = document.createElement('li'); li.textContent = msg; errorList.appendChild(li); }); errorReportArea.classList.remove('hidden'); setTimeout(() => errorReportArea.classList.remove('opacity-0'), 50); }
 
         // --- Date & Time Helpers ---
-        function getMonday(d) { d = new Date(d); let day = d.getDay(), diff = d.getDate() - day + (day == 0 ? -6 : 1); return new Date(d.setDate(diff)); }
-        function formatDateForAPI(date) { const y = date.getFullYear(), m = (date.getMonth() + 1).toString().padStart(2, '0'), d = date.getDate().toString().padStart(2, '0'); return `${y}-${m}-${d}`; }
-        function formatDateForDisplay(date) { return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); }
-        
-        // NEW: Formats time from "HH:MM" to "HHMM" for API
-        function formatTimeForAPI(timeStr) {
-             if (!timeStr) return "0000"; // Fallback
-             return timeStr.replace(':', '');
-         }
+        // (Moved to top)
 
-
-        // --- Slider & Time Helpers --- (REMOVED)
+        // --- Slider & Time Helpers ---
+        function convertSliderValueToDisplayTime(value) { const totalMinutes = parseInt(value, 10) * 30, hours = Math.floor(totalMinutes / 60).toString().padStart(2, '0'), minutes = (totalMinutes % 60).toString().padStart(2, '0'); return `${hours}:${minutes}`; }
+        function convertSliderValueToApiTime(value) { const totalMinutes = parseInt(value, 10) * 30, hours = Math.floor(totalMinutes / 60).toString().padStart(2, '0'), minutes = (totalMinutes % 60).toString().padStart(2, '0'); return `${hours}${minutes}`; }
+        // Combined event listener setup
+        [[fromTimeSliderOutbound, toTimeSliderOutbound, fromTimeLabelOutbound, toTimeLabelOutbound], [fromTimeSliderInbound, toTimeSliderInbound, fromTimeLabelInbound, toTimeLabelInbound]].forEach(([fromSlider, toSlider, fromLbl, toLbl]) => { fromSlider.addEventListener('input', (e) => updateSliderLabels(e, fromSlider, toSlider, fromLbl, toLbl)); toSlider.addEventListener('input', (e) => updateSliderLabels(e, fromSlider, toSlider, fromLbl, toLbl)); });
+        function updateSliderLabels(e, fromSlider, toSlider, fromLbl, toLbl) { const fromVal = parseInt(fromSlider.value, 10); const toVal = parseInt(toSlider.value, 10); if (fromVal > toVal) { if (e.target === fromSlider) toSlider.value = fromVal; else fromSlider.value = toVal; } fromLbl.textContent = convertSliderValueToDisplayTime(fromSlider.value); toLbl.textContent = convertSliderValueToDisplayTime(toSlider.value); }
 
 
         // --- Calculation Helpers ---
         function calculateDelay(scheduled, actual) { if (!actual || actual === "") return Infinity; const schTime = parseApiTime(scheduled), actTime = parseApiTime(actual); if (!schTime || !actTime) return 0; if (actTime.getTime() < schTime.getTime() - 43200000) actTime.setUTCDate(actTime.getUTCDate() + 1); const diffMs = actTime.getTime() - schTime.getTime(), diffMins = Math.round(diffMs / 60000); return diffMins > 0 ? diffMins : 0; }
         function parseApiTime(timeStr) { if (!timeStr || timeStr.length !== 4) return null; const h = parseInt(timeStr.substring(0, 2), 10), m = parseInt(timeStr.substring(2, 4), 10); return new Date(Date.UTC(1970, 0, 1, h, m, 0)); }
         function formatTime(timeStr) { if (!timeStr || timeStr.length !== 4) return timeStr || 'N/A'; return `${timeStr.substring(0, 2)}:${timeStr.substring(2, 4)}`; }
-        // UPDATED: getDelayInfo to set "On Time" and not use "text-danger" for 0 delays
-        function getDelayInfo(minutes, actualArrival) { 
-            const isCancelled = (!actualArrival || actualArrival === ""); 
-            let percentage = 0, category = "On Time", style = "text-gray-900", refund = 0; 
-            if (isCancelled) { 
-                category = "Cancelled"; style = "text-danger"; percentage = 0; 
-            } else if (minutes >= 120) { 
-                percentage = 2.00; category = "200%"; style = "text-danger"; 
-            } else if (minutes >= 60) { 
-                percentage = 1.00; category = "100%"; style = "text-danger"; 
-            } else if (minutes >= 30) { 
-                percentage = 0.50; category = "50%"; style = "text-danger"; 
-            } else if (minutes >= 15) { 
-                percentage = 0.25; category = "25%"; style = "text-danger"; 
-            } else {
-                category = "On Time"; style = "text-gray-900"; // Explicitly set On Time
-            }
-            if (!isCancelled) { 
-                const currentTicketPrice = getRawTicketPrice(); 
-                if (currentTicketPrice > 0) { 
-                    const singleJourneyCost = currentTicketPrice / JOURNEYS_PER_YEAR; 
-                    refund = singleJourneyCost * percentage; 
-                } else refund = 0; 
-            } 
-            return { category, refund, style }; 
-        }
+        function getDelayInfo(minutes, actualArrival) { const isCancelled = (!actualArrival || actualArrival === ""); let percentage = 0, category = "0%", style = "text-gray-900", refund = 0; if (isCancelled) { category = "Cancelled"; style = "text-danger"; percentage = 0; } else if (minutes >= 120) { percentage = 2.00; category = "200%"; style = "text-danger"; } else if (minutes >= 60) { percentage = 1.00; category = "100%"; style = "text-danger"; } else if (minutes >= 30) { percentage = 0.50; category = "50%"; style = "text-danger"; } else if (minutes >= 15) { percentage = 0.25; category = "25%"; style = "text-danger"; } if (!isCancelled) { const currentTicketPrice = getRawTicketPrice(); if (currentTicketPrice > 0) { const singleJourneyCost = currentTicketPrice / JOURNEYS_PER_YEAR; refund = singleJourneyCost * percentage; } else refund = 0; } return { category, refund, style }; }
 
         // --- UI State Helpers ---
         function setLoading(isLoading, message = "", progress = 0) { const clampedProgress = Math.max(0, Math.min(1, progress)); if (isLoading) { loadingSpinner.classList.remove('hidden'); loadingSpinner.classList.add('flex'); statusMessage.textContent = ''; loadingMessage.textContent = message; const offset = circumference - clampedProgress * circumference; progressRing.style.strokeDashoffset = offset; } else { loadingSpinner.classList.add('hidden'); loadingSpinner.classList.remove('flex'); loadingMessage.textContent = ''; progressRing.style.strokeDashoffset = 0; setTimeout(() => { progressRing.style.strokeDashoffset = circumference; }, 500); } }
-        function showStatus(message, type) { statusMessage.textContent = message; statusMessage.className = 'text-sm text-left '; if (type === 'error') statusMessage.classList.add('text-danger'); else if (type === 'success') statusMessage.classList.add('text-success', 'font-medium'); else if (type === 'info') statusMessage.classList.add('text-emerald-600'); else if (type === 'warning') statusMessage.classList.add('text-warning'); }
+        function showStatus(message, type) { statusMessage.textContent = message; statusMessage.className = 'text-center text-sm '; if (type === 'error') statusMessage.classList.add('text-danger'); else if (type === 'success') statusMessage.classList.add('text-success', 'font-medium'); else if (type === 'info') statusMessage.classList.add('text-emerald-600'); else if (type === 'warning') statusMessage.classList.add('text-warning'); }
 
          // --- Settings Persistence ---
-         function getSettingsFromForm() {
-             return {
-                 ticketPrice: getRawTicketPrice(),
-                 daysInOffice: Array.from(daysInOfficeCheckboxes).filter(cb => cb.checked).map(cb => cb.value),
-                 outboundFrom: settingOutboundFromCode.value,
-                 outboundTo: settingOutboundToCode.value,
-                 inboundFrom: settingInboundFromCode.value,
-                 inboundTo: settingInboundToCode.value,
-                 outboundFromDisplay: settingOutboundFrom.value,
-                 outboundToDisplay: settingOutboundTo.value,
-                 inboundFromDisplay: settingInboundFrom.value,
-                 inboundToDisplay: settingInboundTo.value,
-                 // NEW: Save time input values
-                 fromTimeOutbound: fromTimeOutbound.value,
-                 toTimeOutbound: toTimeOutbound.value,
-                 fromTimeInbound: fromTimeInbound.value,
-                 toTimeInbound: toTimeInbound.value
-             };
+        function saveSettings() { const settings = { ticketPrice: getRawTicketPrice(), daysInOffice: Array.from(daysInOfficeCheckboxes).filter(cb => cb.checked).map(cb => cb.value), outboundFrom: settingOutboundFromCode.value, outboundTo: settingOutboundToCode.value, inboundFrom: settingInboundFromCode.value, inboundTo: settingInboundToCode.value, outboundFromDisplay: settingOutboundFrom.value, outboundToDisplay: settingOutboundTo.value, inboundFromDisplay: settingInboundFrom.value, inboundToDisplay: settingInboundTo.value }; localStorage.setItem('railDelayFinderSettings', JSON.stringify(settings)); showStatus('Settings saved.', 'success'); setTimeout(() => { if (statusMessage.textContent === 'Settings saved.') showStatus('', 'info'); }, 3000); updateJourneyLabels(); }
+        function loadSettings(isManual = false) { const savedSettings = localStorage.getItem('railDelayFinderSettings'); if (savedSettings) { try { const settings = JSON.parse(savedSettings); if (settings.ticketPrice) { ticketPriceInput.value = settings.ticketPrice; formatPriceInput(); } if (settings.daysInOffice && Array.isArray(settings.daysInOffice)) { const savedDays = new Set(settings.daysInOffice); daysInOfficeCheckboxes.forEach(cb => { cb.checked = savedDays.has(cb.value); }); } settingOutboundFromCode.value = settings.outboundFrom || 'DID'; settingOutboundFrom.value = settings.outboundFromDisplay || 'Didcot Parkway [DID]'; settingOutboundToCode.value = settings.outboundTo || 'PAD'; settingOutboundTo.value = settings.outboundToDisplay || 'London Paddington [PAD]'; settingInboundFromCode.value = settings.inboundFrom || 'PAD'; settingInboundFrom.value = settings.inboundFromDisplay || 'London Paddington [PAD]'; settingInboundToCode.value = settings.inboundTo || 'DID'; settingInboundTo.value = settings.inboundToDisplay || 'Didcot Parkway [DID]'; updateJourneyLabels(); if (isManual) showStatus('Settings loaded.', 'info'); } catch (e) { console.error("Error loading settings:", e); showStatus('Could not load settings.', 'error'); } } else { formatPriceInput(); updateJourneyLabels(); if (isManual) showStatus('No saved settings found.', 'info'); } }
+        
+         // --- Search History ---
+         const MAX_HISTORY_ITEMS = 10;
+         const historyList = document.getElementById('search-history-list');
+         const clearHistoryButton = document.getElementById('clear-history-button');
+
+         function getSearchHistory() {
+             return JSON.parse(localStorage.getItem('railDelaySearchHistory') || '[]');
          }
 
-        function saveSettings() {
-             const settings = getSettingsFromForm();
-             localStorage.setItem('railDelayFinderSettings', JSON.stringify(settings));
-             showStatus('Settings saved.', 'success');
-             setTimeout(() => { if (statusMessage.textContent === 'Settings saved.') showStatus('', 'info'); }, 3000);
-             updateJourneyLabels(); // Update main form labels after saving
+         function saveSearchToHistory(searchLabel, totalRefund) { // searchLabel (e.g., "w/c 2025-10-20" or "Day 2025-10-21")
+             let history = getSearchHistory();
+             const searchId = searchLabel; // Use the label as the unique ID
+             const record = {
+                 id: searchId,
+                 label: searchLabel, // Store the human-readable label
+                 refund: totalRefund,
+                 timestamp: new Date().toISOString()
+             };
+             // Remove old record for this same search if it exists
+             history = history.filter(item => item.id !== searchId);
+             // Add new record to the top
+             history.unshift(record);
+             // Limit history size
+             if (history.length > MAX_HISTORY_ITEMS) {
+                 history = history.slice(0, MAX_HISTORY_ITEMS);
+             }
+             localStorage.setItem('railDelaySearchHistory', JSON.stringify(history));
+             loadSearchHistory(); // Refresh history display
          }
-        
-         // --- Search History (REMOVED) ---
+
+         function loadSearchHistory() {
+             const history = getSearchHistory();
+             historyList.innerHTML = ''; // Clear list
+             if (history.length === 0) {
+                 historyList.innerHTML = '<div class="history-item is-empty">No history found.</div>';
+                 return;
+             }
+             history.forEach(item => {
+                 const li = document.createElement('div');
+                 li.className = 'history-item';
+                 let displayLabel = item.label;
+                 if(item.label.startsWith('w/c')) {
+                     // Parse date string from "w/c YYYY-MM-DD"
+                     try {
+                        const datePart = item.label.split(' ')[1];
+                        displayLabel = `w/c ${formatDateForDisplay(new Date(datePart + 'T00:00:00Z'))}`;
+                     } catch(e) { /* Fallback */ }
+                 } else if (item.label.startsWith('Day')) {
+                      // Parse date string from "Day YYYY-MM-DD"
+                      try {
+                        const datePart = item.label.split(' ')[1];
+                        displayLabel = `Day ${formatDateForDisplay(new Date(datePart + 'T00:00:00Z'))}`;
+                     } catch(e) { /* Fallback */ }
+                 }
+                 
+                 li.innerHTML = `
+                     <span>${displayLabel}</span>
+                     <span class="flex-shrink-0 ml-2">£${item.refund.toFixed(2)}</span>
+                 `;
+                 historyList.appendChild(li);
+             });
+         }
+         
+         clearHistoryButton.addEventListener('click', () => {
+             if (confirm('Are you sure you want to clear your search history?')) {
+                 localStorage.removeItem('railDelaySearchHistory');
+                 loadSearchHistory(); // Refresh list (will show empty)
+                 const settingsStatus = document.querySelector('#settings-footer p');
+                 if(settingsStatus) settingsStatus.textContent = "History cleared.";
+             }
+         });
+
 
         saveSettingsButton.addEventListener('click', saveSettings);
         loadSettingsButton.addEventListener('click', () => {
@@ -1120,29 +1089,12 @@
 
 
         // --- Price Input Formatting ---
+        // (Moved to top)
         ticketPriceInput.addEventListener('blur', formatPriceInput); ticketPriceInput.addEventListener('focus', unformatPriceInput);
 
          // --- Settings Panel Toggle ---
-         function toggleSettingsPanel(show) { 
-             if (show) { 
-                 // REMOVED: loadSearchHistory();
-                 settingsOverlay.classList.remove('hidden'); 
-                 settingsPanel.classList.remove('translate-x-full'); 
-                 setTimeout(() => settingsOverlay.classList.remove('opacity-0'), 10); 
-             } else { 
-                 settingsOverlay.classList.add('opacity-0'); 
-                 settingsPanel.classList.add('translate-x-full'); 
-                 setTimeout(() => settingsOverlay.classList.add('hidden'), 300); 
-             } 
-         }
-         settingsToggleButton.addEventListener('click', () => toggleSettingsPanel(true));
-         closeSettingsButton.addEventListener('click', () => toggleSettingsPanel(false));
-         settingsOverlay.addEventListener('click', () => toggleSettingsPanel(false));
-         
-         // NEW: Event listeners for "Change" journey buttons
-         changeOutboundJourneyBtn.addEventListener('click', () => toggleSettingsPanel(true));
-         changeInboundJourneyBtn.addEventListener('click', () => toggleSettingsPanel(true));
-
+         function toggleSettingsPanel(show) { if (show) { loadSearchHistory(); /* Refresh history when opening */ settingsOverlay.classList.remove('hidden'); settingsPanel.classList.remove('translate-x-full'); setTimeout(() => settingsOverlay.classList.remove('opacity-0'), 10); } else { settingsOverlay.classList.add('opacity-0'); settingsPanel.classList.add('translate-x-full'); setTimeout(() => settingsOverlay.classList.add('hidden'), 300); } }
+         settingsToggleButton.addEventListener('click', () => toggleSettingsPanel(true)); closeSettingsButton.addEventListener('click', () => toggleSettingsPanel(false)); settingsOverlay.addEventListener('click', () => toggleSettingsPanel(false));
 
         // --- Search Type Toggle ---
         searchTypeRadios.forEach(radio => {
@@ -1168,7 +1120,7 @@
         autocompleteInputs.forEach(({ input, results, codeInput }) => {
             input.addEventListener('input', () => handleAutocompleteInput(input, results, codeInput));
             input.addEventListener('focus', () => handleAutocompleteInput(input, results, codeInput));
-            input.addEventListener('blur', () => setTimeout(() => hideAutocompleteResults(results), 150)); // Delay to allow click
+            input.addEventListener('blur', () => setTimeout(() => hideAutocompleteResults(results), 150));
              input.addEventListener('keydown', (e) => handleAutocompleteKeydown(e, input, results, codeInput));
         });
 
@@ -1176,7 +1128,6 @@
              const query = input.value.trim().toLowerCase();
              resultsContainer.innerHTML = ''; activeAutocompleteIndex = -1; 
              
-             // If user just selected an item, don't re-filter
              if (input.value.includes('[') && input.value.includes(']')) {
                  // Check if the value matches the stored code
                  if (`[${codeInput.value.toLowerCase()}]` === input.value.slice(-5).toLowerCase()) {
@@ -1214,6 +1165,7 @@
              hideAutocompleteResults(resultsContainer);
              updateJourneyLabels(); // Update labels in main form
          }
+         function highlightMatch(text, query) { const regex = new RegExp(`(${query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi'); return text.replace(regex, '<span class="bg-emerald-100 font-bold">$1</span>'); }
          function handleAutocompleteKeydown(e, input, resultsContainer, codeInput) {
              const items = resultsContainer.querySelectorAll('.autocomplete-item'); if (items.length === 0) return;
              if (e.key === 'ArrowDown') { e.preventDefault(); activeAutocompleteIndex = (activeAutocompleteIndex + 1) % items.length; updateAutocompleteHighlight(items); } 
@@ -1232,7 +1184,11 @@
         setDefaultDate(); 
         loadSettings(false); // Load settings on start, 'false' means not manual
         
-        // REMOVED: Init slider labels
+        // Init slider labels
+        updateSliderLabels({ target: fromTimeSliderOutbound }, fromTimeSliderOutbound, toTimeSliderOutbound, fromTimeLabelOutbound, toTimeLabelOutbound); 
+        updateSliderLabels({ target: toTimeSliderOutbound }, fromTimeSliderOutbound, toTimeSliderOutbound, fromTimeLabelOutbound, toTimeLabelOutbound); 
+        updateSliderLabels({ target: fromTimeSliderInbound }, fromTimeSliderInbound, toTimeSliderInbound, fromTimeLabelInbound, toTimeLabelInbound); 
+        updateSliderLabels({ target: toTimeSliderInbound }, fromTimeSliderInbound, toTimeSliderInbound, fromTimeLabelInbound, toTimeLabelInbound);
 
         // Ensure initial state of days in office group matches default radio
         if (document.querySelector('input[name="search-type"]:checked').value === 'day') {
@@ -1240,44 +1196,25 @@
              weekCommencingLabel.style.visibility = 'hidden'; // Hide label initially if day selected
         }
         
-        // REMOVED: Load search history on page load
+        // Load search history on page load (for settings panel)
+        loadSearchHistory();
+        
+        // Add table filter event listeners
+        const officeTableSearchEl = document.getElementById('office-table-search');
+        const otherTableSearchEl = document.getElementById('other-table-search');
+        if(officeTableSearchEl) officeTableSearchEl.addEventListener('input', (e) => filterTable(resultsBodyOffice, e.target.value));
+        if(otherTableSearchEl) otherTableSearchEl.addEventListener('input', (e) => filterTable(resultsBodyOther, e.target.value));
 
-        // NEW: Add table toggle filter event listeners
-        toggleOfficeDelays.addEventListener('change', () => filterTableByDelay(resultsBodyOffice, toggleOfficeDelays.checked));
-        toggleOtherDelays.addEventListener('change', () => filterTableByDelay(resultsBodyOther, toggleOtherDelays.checked));
-
-        // NEW: Filter function for table toggles
-        function filterTableByDelay(tableBody, delaysOnly) {
+        function filterTable(tableBody, query) {
+            const lowerQuery = query.toLowerCase();
             const rows = tableBody.getElementsByTagName('tr');
-            let hasVisibleRows = false;
             for (const row of rows) {
-                if (delaysOnly) {
-                    // Check the 6th cell (index 5) for delay/cancel text
-                    const delayCell = row.cells[5];
-                    // "text-danger" is applied to all delays/cancellations
-                    if (delayCell && delayCell.classList.contains('text-danger')) {
-                        row.style.display = '';
-                        hasVisibleRows = true;
-                    } else {
-                        row.style.display = 'none';
-                    }
-                } else {
-                    // Show all rows
+                const text = row.textContent.toLowerCase();
+                if (text.includes(lowerQuery)) {
                     row.style.display = '';
-                    hasVisibleRows = true;
+                } else {
+                    row.style.display = 'none';
                 }
-            }
-            
-            // Handle "no results" message
-            const noResultsEl = tableBody.id === 'results-body-office' ? noOfficeResultsMsg : noOtherResultsMsg;
-            if (!hasVisibleRows && rows.length > 0) {
-                 noResultsEl.textContent = 'No matching delays found for this filter.';
-                 noResultsEl.classList.remove('hidden');
-            } else if (rows.length > 0) {
-                 noResultsEl.classList.add('hidden');
-            } else {
-                 // This handles the initial "No journeys found" case
-                 noResultsEl.textContent = noResultsEl.id === 'no-office-results' ? 'No journeys found for selected in-office days.' : 'No journeys found for other weekdays.';
             }
         }
 
