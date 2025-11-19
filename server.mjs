@@ -6,11 +6,13 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
-import Redis from 'ioredis'; // Import Redis client
+import Redis from 'ioredis';
 
-// --- Configuration ---
+// ... (Keep existing Configuration & Redis setup unchanged) ...
+// ... (Same imports and setup as before) ...
+
 const CONSUMER_KEY = process.env.RAIL_API_KEY;
-const REDIS_URL = process.env.REDIS_URL; // New Environment Variable
+const REDIS_URL = process.env.REDIS_URL; 
 
 if (!CONSUMER_KEY) {
     console.error("❌ FATAL ERROR: RAIL_API_KEY is not defined.");
@@ -25,27 +27,22 @@ const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// --- Caching Strategy ---
 let redisClient = null;
-
 if (REDIS_URL) {
     console.log("🔌 Connecting to Redis for caching...");
     redisClient = new Redis(REDIS_URL);
     redisClient.on('error', (err) => console.error('Redis Error:', err));
 } else {
     console.log("⚠️ No REDIS_URL found. Falling back to local file cache (.cache/)");
-    // Ensure local cache dir exists
     const CACHE_DIR = path.join(__dirname, '.cache');
     if (!fs.existsSync(CACHE_DIR)) fs.mkdirSync(CACHE_DIR);
 }
 
-// Helper: Get Data from Cache (Abstracts Redis vs File)
 async function getFromCache(key) {
     if (redisClient) {
         const data = await redisClient.get(key);
         return data ? JSON.parse(data) : null;
     } else {
-        // Local File Fallback
         const filePath = path.join(__dirname, '.cache', key + '.json');
         if (fs.existsSync(filePath)) {
             return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
@@ -54,7 +51,6 @@ async function getFromCache(key) {
     }
 }
 
-// Helper: Save Data to Cache (Abstracts Redis vs File)
 async function saveToCache(key, data, ttlSeconds = 0) {
     const stringData = JSON.stringify(data);
     if (redisClient) {
@@ -64,19 +60,16 @@ async function saveToCache(key, data, ttlSeconds = 0) {
             await redisClient.set(key, stringData);
         }
     } else {
-        // Local File Fallback
         const filePath = path.join(__dirname, '.cache', key + '.json');
         fs.writeFileSync(filePath, stringData);
     }
 }
 
-// Helper: Generate Cache Key
 function getCacheKey(endpoint, payload) {
     const dataString = endpoint + JSON.stringify(payload);
     return crypto.createHash('md5').update(dataString).digest('hex');
 }
 
-// Helper: Check if date is in the past
 function isDateInPast(dateStr) {
     if (!dateStr) return false;
     const today = new Date().toISOString().split('T')[0];
@@ -84,7 +77,6 @@ function isDateInPast(dateStr) {
 }
 
 const app = express();
-
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -101,7 +93,10 @@ app.post('/api/servicemetrics', async (req, res) => {
     const cachedData = await getFromCache(cacheKey);
     if (cachedData) {
         console.log(`⚡ Served from Cache: Metrics for ${payload.from_date}`);
-        return res.json(cachedData);
+        // Inject metadata tag for frontend
+        // We clone it to avoid mutating the cached object if it's in memory (though JSON.parse usually handles that)
+        const responseWithTag = { ...cachedData, _fromCache: true };
+        return res.json(responseWithTag);
     }
 
     // 2. Fetch API
@@ -119,9 +114,10 @@ app.post('/api/servicemetrics', async (req, res) => {
         }
 
         const data = await apiResponse.json();
+        // Send fresh data (implicitly _fromCache: undefined/false)
         res.json(data);
 
-        // 3. Save Cache (Only valid historic data)
+        // 3. Save Cache
         if (isDateInPast(payload.from_date)) {
             await saveToCache(cacheKey, data);
         }
@@ -135,14 +131,13 @@ app.post('/api/servicedetails', async (req, res) => {
     const payload = req.body;
     const cacheKey = getCacheKey('details', payload);
 
-    // 1. Try Cache
     const cachedData = await getFromCache(cacheKey);
     if (cachedData) {
-        console.log(`⚡ Served from Cache: Details for RID ${payload.rid}`);
-        return res.json(cachedData);
+        // Inject metadata tag
+        const responseWithTag = { ...cachedData, _fromCache: true };
+        return res.json(responseWithTag);
     }
 
-    // 2. Fetch API
     try {
         const apiResponse = await fetch(DETAILS_URL, {
             method: 'POST',
@@ -159,8 +154,6 @@ app.post('/api/servicedetails', async (req, res) => {
         const data = await apiResponse.json();
         res.json(data); 
 
-        // 3. Save Cache
-        // We assume RIDs from the past don't change.
         await saveToCache(cacheKey, data);
 
     } catch (error) {
@@ -172,7 +165,6 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'DelayRepayChecker.html'));
 });
 
-// --- Start Server ---
 if (IS_PRODUCTION) {
     http.createServer(app).listen(PORT, () => {
         console.log(`🚀 Production server running on port ${PORT} (HTTP)`);
