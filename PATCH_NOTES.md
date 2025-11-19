@@ -1,8 +1,26 @@
 Patch Notes
 
-v1.5.0 - Asynchronous Queuing System
+v1.5.1 - Queue UX Refinements
 
 Status: Ready for Deployment
+
+🖥️ Frontend Enhancements
+
+Visual Progress Bar: Replaced the generic spinner with a determinate progress bar during the search process. It dynamically updates based on the stages of the job (Queueing -> Metrics -> Details -> Finalizing).
+
+Persistent Search Sessions: Improved the "Resume on Refresh" capability. If a user refreshes the page while a search is processing, the application now attempts to reconnect to the active job ID stored in localStorage and resume monitoring without restarting the search.
+
+Distinct Data Badges: Added clear visual indicators in the results area:
+
+Blue "Cached Data" Badge: Shown if any part of the result was served from the Redis/local cache.
+
+Green "Live Data" Badge: Shown if the result was freshly fetched from the National Rail API.
+
+Improved Status Messages: Status text now provides more granular feedback (e.g., "Analyzing 5/10 trains...") rather than a generic loading message.
+
+v1.5.0 - Asynchronous Queuing System
+
+Status: Implemented
 
 ⚡ Architecture Update
 
@@ -20,8 +38,6 @@ Shared Benefits: The queue system leverages the existing Redis cache (v1.4.0). I
 
 Polling Logic: Updated DelayRepayChecker.html to handle the new async workflow (Submit -> Get ID -> Poll Status -> Display Result).
 
-Visual Feedback: Added status messages to inform users when their request is queued vs. processing.
-
 v1.4.0 - Performance Optimization & Cleanup
 
 Status: Implemented
@@ -30,19 +46,13 @@ Status: Implemented
 
 Server-Side Caching: Implemented a robust caching layer in server.mjs using ioredis.
 
-Persistence: Uses Redis (via Upstash) to store API responses persistently, ensuring the cache survives server restarts and deployments.
+Persistence: Uses Redis (via Upstash) to store API responses persistently.
 
-Fallback: Automatically falls back to a local .cache/ file system for local development if REDIS_URL is not present.
-
-Logic: Caches serviceMetrics requests only for past dates to ensure data integrity.
-
-Impact: Significantly reduces API calls to the National Rail HSP service.
+Logic: Caches serviceMetrics requests only for past dates to ensure data integrity. serviceDetails are cached by RID.
 
 🧹 Codebase Cleanup
 
-Removed Background Worker: Deleted delay_checker.mjs and the node-notifier dependency to focus the repository purely on the web application architecture.
-
-Simplified Dependencies: Removed unused packages from package.json to keep the build lightweight.
+Removed Background Worker: Deleted delay_checker.mjs and dependencies to focus on the web application.
 
 v1.3.0 - Security & Data Optimization
 
@@ -50,9 +60,9 @@ Status: Implemented
 
 🔒 Security & Infrastructure
 
-Environment Security: Removed hardcoded fallback API keys from server.mjs.
+Environment Security: Removed hardcoded fallback API keys.
 
-Git Hygiene: Added *.pem to .gitignore and cleaned up legacy files.
+Git Hygiene: Added *.pem to .gitignore.
 
 Production Readiness: server.mjs switches between HTTP (Cloud) and HTTPS (Local).
 
@@ -66,14 +76,8 @@ Status: Implemented
 
 🚀 Architecture
 
-Express.js Proxy Server: Added server.mjs to proxy API requests and secure keys.
+Express.js Proxy Server: Added server.mjs to proxy API requests.
 
 v1.0.0 - Initial Mobile Release
 
 Status: Legacy / Foundation
-
-⚙️ Core Functionality
-
-Search Modes: Support for "Week View" and "Single Day" view.
-
-Delay Calculation: Automatic retrieval and calculation of delay minutes.
