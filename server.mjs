@@ -77,7 +77,6 @@ const worker = new Worker('rail-search-queue', async (job) => {
         if (type === 'details' || (type === 'metrics' && isDateInPast(payload.from_date))) {
              const stringData = JSON.stringify(data);
              await connection.set(cacheKey, stringData); 
-             console.log(`💾 Cached result for ${cacheKey}`);
         }
 
         return data; 
@@ -98,12 +97,9 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-
-// Serve static files (JS, CSS, Images) automatically
-// BUT we exclude index.html so we can route the root manually
 app.use(express.static(path.join(__dirname, 'public'), { index: false })); 
 
-// --- API Endpoints (Same as before) ---
+// --- API Endpoints ---
 
 async function handleRequest(type, payload, res) {
     const cacheKey = getCacheKey(type, payload);
@@ -111,7 +107,6 @@ async function handleRequest(type, payload, res) {
     try {
         const cachedRaw = await connection.get(cacheKey);
         if (cachedRaw) {
-            console.log(`⚡ Cache Hit: Skipping queue for ${type}`);
             return res.json({ jobId: `cached:${cacheKey}`, status: 'completed' });
         }
     } catch (e) {
@@ -166,6 +161,46 @@ app.get('/api/job/:id', async (req, res) => {
         }
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+});
+
+// --- NEW: Subscription Endpoint ---
+app.post('/api/subscribe', async (req, res) => {
+    const { email, fromCode, toCode, morningTime, eveningTime } = req.body;
+
+    // Basic Validation
+    if (!email || !fromCode || !toCode) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    try {
+        // Create a unique ID for this subscription
+        const subId = crypto.randomUUID();
+        const subscription = {
+            id: subId,
+            email,
+            route: { from: fromCode, to: toCode },
+            times: { am: morningTime, pm: eveningTime },
+            createdAt: new Date().toISOString(),
+            active: true
+        };
+
+        // Store in Redis
+        // 1. Store the full object by ID
+        await connection.set(`subscription:${subId}`, JSON.stringify(subscription));
+        
+        // 2. Add ID to a list/set so we can find all subscriptions later
+        await connection.sadd('subscriptions:all', subId);
+        
+        // 3. Optional: Index by email to prevent duplicates or allow user lookup
+        await connection.sadd(`user_subs:${email}`, subId);
+
+        console.log(`📝 New subscription logged: ${email} [${fromCode} -> ${toCode}]`);
+        res.json({ status: "success", id: subId });
+
+    } catch (error) {
+        console.error("Subscription Error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 });
 

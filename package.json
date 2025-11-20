@@ -1,7 +1,7 @@
 {
-  "name": "rail-delay-checker",
-  "version": "1.0.0",
-  "description": "Web-based API proxy for National Rail HSP.",
+  "name": "refund-my-rail",
+  "version": "1.6.0",
+  "description": "Automated rail delay tracking and compensation calculator.",
   "main": "server.mjs",
   "type": "module",
   "scripts": {
@@ -10,7 +10,8 @@
   "keywords": [
     "rail",
     "delay",
-    "gwr"
+    "compensation",
+    "refund"
   ],
   "author": "",
   "license": "ISC",
@@ -20,6 +21,7 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "ioredis": "^5.3.2",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "uuid": "^9.0.1"
   }
 }
