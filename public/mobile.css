@@ -1,0 +1,114 @@
+/* Mobile-specific optimizations for DelayRepayChecker.html */
+
+/* Mobile Optimizations */
+@media (max-width: 640px) {
+    /* Ensure minimum font size to prevent zoom on iOS */
+    input[type="time"],
+    input[type="date"],
+    input[type="text"],
+    select {
+        font-size: 16px !important;
+        min-height: 44px;
+        padding: 0.75rem 1rem !important;
+    }
+
+    /* Optimize refund hero card for mobile */
+    .refund-hero {
+        padding: 1.5rem !important;
+    }
+
+    .refund-hero p:first-child {
+        font-size: 0.75rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+
+    .refund-hero #total-refund-kpi-office {
+        font-size: 2.5rem !important;
+    }
+
+    /* Better touch targets for buttons */
+    button,
+    .btn {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 0.75rem 1.25rem !important;
+    }
+
+    /* Improve nav spacing */
+    nav .max-w-7xl {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    /* Checkbox and radio improvements */
+    input[type="checkbox"],
+    input[type="radio"] {
+        min-width: 24px;
+        min-height: 24px;
+    }
+
+    /* Better spacing for form groups */
+    .space-y-6 > * + * {
+        margin-top: 1.25rem !important;
+    }
+
+    /* Improve autocomplete touch targets */
+    .autocomplete-results li {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1rem;
+    }
+
+    /* KPI cards - better mobile display */
+    .kpi-card {
+        min-width: 130px !important;
+    }
+
+    /* Mobile table card refinements */
+    .mobile-table-card tbody tr {
+        padding: 1.25rem !important;
+        margin-bottom: 1.25rem !important;
+    }
+
+    .mobile-table-card td {
+        padding: 0.5rem 0 !important;
+        font-size: 1rem !important;
+        align-items: flex-start !important;
+    }
+
+    .mobile-table-card td::before {
+        font-size: 0.875rem !important;
+        min-width: 100px;
+        flex-shrink: 0;
+    }
+
+    /* Claim button in mobile cards */
+    .mobile-table-card td:has(a[href*="delay"]) {
+        display: block !important;
+        text-align: center;
+        margin-top: 1rem !important;
+        padding-top: 1rem !important;
+    }
+
+    .mobile-table-card td:has(a[href*="delay"])::before {
+        display: none;
+    }
+
+    /* Settings panel improvements */
+    #settings-panel {
+        font-size: 16px;
+    }
+
+    #settings-panel input,
+    #settings-panel select {
+        min-height: 44px;
+    }
+}
+
+/* Tablet optimizations */
+@media (min-width: 641px) and (max-width: 1024px) {
+    .refund-hero #total-refund-kpi-office {
+        font-size: 3.5rem !important;
+    }
+}
