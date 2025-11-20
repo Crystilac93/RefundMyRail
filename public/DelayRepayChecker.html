@@ -130,20 +130,21 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div class="autocomplete-container relative">
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Home Station</label>
-                            <!-- Placeholder updated, value is explicitly empty -->
+                            <!-- FIXED: Removed hardcoded placeholder and value -->
                             <input type="text" id="setting-outbound-from" class="w-full rounded-xl border-slate-200 py-3 text-sm font-semibold text-slate-700 focus:ring-emerald-500 focus:border-emerald-500" placeholder="e.g. Manchester Piccadilly" value="">
                             <div class="autocomplete-results hidden absolute w-full bg-white border border-slate-200 rounded-b-xl shadow-xl z-50" id="results-setting-outbound-from"></div>
                             <input type="hidden" id="setting-outbound-from-code" value=""> 
                         </div>
                         <div class="autocomplete-container relative">
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Work Station</label>
-                            <!-- Placeholder updated, value is explicitly empty -->
+                            <!-- FIXED: Removed hardcoded placeholder and value -->
                             <input type="text" id="setting-outbound-to" class="w-full rounded-xl border-slate-200 py-3 text-sm font-semibold text-slate-700 focus:ring-emerald-500 focus:border-emerald-500" placeholder="e.g. London Euston" value="">
                             <div class="autocomplete-results hidden absolute w-full bg-white border border-slate-200 rounded-b-xl shadow-xl z-50" id="results-setting-outbound-to"></div>
                             <input type="hidden" id="setting-outbound-to-code" value="">
                         </div>
                     </div>
                     
+                    <!-- Hidden fields for return journey (auto-sync handled by JS) -->
                     <input type="hidden" id="setting-inbound-from" value="">
                     <input type="hidden" id="setting-inbound-from-code" value="">
                     <input type="hidden" id="setting-inbound-to" value="">
@@ -158,27 +159,29 @@
                         <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Mode</label>
                         <div class="flex bg-slate-100 p-1.5 rounded-xl">
                             <label class="flex-1 text-center cursor-pointer">
-                                <input type="radio" name="search-type" value="week" checked class="sr-only peer">
+                                <input type="radio" name="search-type" value="week" class="sr-only peer">
                                 <span class="block py-2.5 text-sm font-bold text-slate-500 rounded-lg peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm transition-all">Week View</span>
                             </label>
                             <label class="flex-1 text-center cursor-pointer">
-                                <input type="radio" name="search-type" value="day" class="sr-only peer">
+                                <input type="radio" name="search-type" value="day" class="sr-only peer" checked> <!-- Defaulted to Day -->
                                 <span class="block py-2.5 text-sm font-bold text-slate-500 rounded-lg peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm transition-all">Single Day</span>
                             </label>
                         </div>
                     </div>
                     
                     <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3" id="date-picker-label">Select Week</label>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3" id="date-picker-label">Select Day</label>
                         <div class="relative">
                             <input type="date" id="date-picker" class="block w-full px-4 py-3 rounded-xl border-slate-200 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-slate-800 font-semibold bg-slate-50 hover:bg-white transition-colors">
                         </div>
-                        <p id="week-commencing-label" class="text-xs text-emerald-600 mt-2 font-semibold pl-1">w/c ...</p>
+                        <!-- Week Commencing label starts hidden in Day mode -->
+                        <p id="week-commencing-label" class="text-xs text-emerald-600 mt-2 font-semibold pl-1" style="visibility: hidden;">w/c ...</p>
                     </div>
                 </div>
 
                 <!-- Days in Office -->
-                <div id="days-in-office-group">
+                <!-- Hidden initially because default mode is Day -->
+                <div id="days-in-office-group" style="display: none;">
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Days Travelled</label>
                     <div class="flex justify-between gap-2 sm:gap-4">
                         <label class="flex flex-col items-center cursor-pointer group select-none"><input type="checkbox" name="daysInOffice" value="1" checked class="peer sr-only"><div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-sm font-bold peer-checked:bg-emerald-500 peer-checked:text-white transition-all group-active:scale-90 border border-transparent peer-checked:border-emerald-600 shadow-sm">M</div></label>
@@ -192,13 +195,13 @@
                 <!-- Time Selection -->
                 <div class="space-y-6 pt-4 border-t border-slate-100">
                      <div class="grid grid-cols-2 gap-6">
-                         <div class="col-span-2 flex justify-between items-center"><span class="text-sm font-bold text-slate-900">Morning Commute <span class="text-slate-400 font-normal ml-1" id="outbound-route-display"></span></span></div>
+                         <div class="col-span-2 flex justify-between items-center"><span class="text-sm font-bold text-slate-900">Morning Commute</span></div>
                          <div><label class="block text-[10px] text-slate-400 uppercase tracking-wider mb-2 font-bold">Depart After</label><input type="time" id="from-time-outbound" value="07:00" class="w-full rounded-xl border-slate-200 text-sm py-3 font-semibold text-slate-700 focus:border-emerald-500 focus:ring-emerald-500"></div>
                          <div><label class="block text-[10px] text-slate-400 uppercase tracking-wider mb-2 font-bold">Depart Before</label><input type="time" id="to-time-outbound" value="07:30" class="w-full rounded-xl border-slate-200 text-sm py-3 font-semibold text-slate-700 focus:border-emerald-500 focus:ring-emerald-500"></div>
                      </div>
                      
                      <div class="grid grid-cols-2 gap-6">
-                         <div class="col-span-2 flex justify-between items-center mt-2"><span class="text-sm font-bold text-slate-900">Evening Commute <span class="text-slate-400 font-normal ml-1" id="inbound-route-display"></span></span></div>
+                         <div class="col-span-2 flex justify-between items-center mt-2"><span class="text-sm font-bold text-slate-900">Evening Commute</span></div>
                          <div><label class="block text-[10px] text-slate-400 uppercase tracking-wider mb-2 font-bold">Depart After</label><input type="time" id="from-time-inbound" value="17:00" class="w-full rounded-xl border-slate-200 text-sm py-3 font-semibold text-slate-700 focus:border-emerald-500 focus:ring-emerald-500"></div>
                          <div><label class="block text-[10px] text-slate-400 uppercase tracking-wider mb-2 font-bold">Depart Before</label><input type="time" id="to-time-inbound" value="17:30" class="w-full rounded-xl border-slate-200 text-sm py-3 font-semibold text-slate-700 focus:border-emerald-500 focus:ring-emerald-500"></div>
                      </div>
@@ -439,6 +442,13 @@
                     els.officeDaysContainer.style.display = isWeek ? 'block' : 'none';
                     document.getElementById('date-picker-label').innerText = isWeek ? 'Select Week' : 'Select Day';
                     updateWeekLabel();
+                    
+                    // NEW: Adjust week commencing label visibility based on mode
+                    if(isWeek) {
+                         els.wcLabel.style.visibility = 'visible';
+                    } else {
+                         els.wcLabel.style.visibility = 'hidden';
+                    }
                 });
             });
             els.priceInput.addEventListener('blur', () => {
@@ -446,7 +456,6 @@
                 els.priceInput.value = val.toFixed(2);
             });
             
-            // Autocomplete setup relies on stationData being available globally
             if (typeof stationData !== 'undefined') {
                  setupAutocomplete(els.outFrom, document.getElementById('results-setting-outbound-from'), els.outFromCode, true);
                  setupAutocomplete(els.outTo, document.getElementById('results-setting-outbound-to'), els.outToCode, true);
@@ -469,7 +478,7 @@
             setLoading(false);
         }
 
-        // --- loadSettings: Safely loads settings without injecting defaults ---
+        // --- UPDATED loadSettings: REMOVED DEFAULT VALUES ---
         function loadSettings() {
             const stored = localStorage.getItem('railDelaySettings');
             if (stored) {
@@ -514,8 +523,13 @@
             // Only show codes if they exist
             const outCode = els.outFromCode.value || '?';
             const inCode = els.outToCode.value || '?';
-            els.outRouteDisplay.textContent = `(${outCode} ➝ ${inCode})`; 
-            els.inRouteDisplay.textContent = `(${inCode} ➝ ${outCode})`; 
+            // REMOVED: Update text labels next to 'Morning/Evening Commute'
+            // els.outRouteDisplay.textContent = `(${outCode} ➝ ${inCode})`; 
+            // els.inRouteDisplay.textContent = `(${inCode} ➝ ${outCode})`; 
+            
+            // INSTEAD: Clear them to prevent '? - ?'
+            if(els.outRouteDisplay) els.outRouteDisplay.textContent = '';
+            if(els.inRouteDisplay) els.inRouteDisplay.textContent = '';
         }
         function toggleSettings(show) { if (show) { els.settingsOverlay.classList.remove('hidden'); els.settingsPanel.classList.remove('translate-x-full'); setTimeout(() => els.settingsOverlay.classList.remove('opacity-0'), 10); } else { els.settingsOverlay.classList.add('opacity-0'); els.settingsPanel.classList.add('translate-x-full'); setTimeout(() => els.settingsOverlay.classList.add('hidden'), 300); } }
 
@@ -796,7 +810,7 @@
                 const formattedSchDep = formatTime(s.schDep);
                 const formattedActArr = s.isCancelled ? 'Cancelled' : formatTime(s.actArr);
                 
-                // TOC Badge logic
+                // NEW: TOC Badge logic
                 let tocBadge = '';
                 if (s.toc) {
                     let tocClass = 'toc-default';
