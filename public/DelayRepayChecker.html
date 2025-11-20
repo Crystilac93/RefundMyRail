@@ -1,74 +1,236 @@
 <!DOCTYPE html>
 <html lang="en-GB">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#10b981"> 
+    <meta name="theme-color" content="#10b981">
     <title>RefundMyRail | Dashboard</title>
-    
+
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="train_icon.png">
     <link rel="apple-touch-icon" href="train_icon.png">
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
+
     <style>
         /* --- Core Defaults --- */
-        html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; overscroll-behavior-y: none; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        html {
+            scroll-behavior: smooth;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            overscroll-behavior-y: none;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
 
         @media (max-width: 768px) {
-            .mobile-table-card thead { display: none; }
-            .mobile-table-card tbody tr { display: flex; flex-direction: column; background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; margin-bottom: 1rem; padding: 1rem; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
-            .mobile-table-card td { display: flex; justify-content: space-between; padding: 0.25rem 0; border: none; font-size: 0.95rem; }
-            .mobile-table-card td::before { content: attr(data-label); font-weight: 600; color: #6b7280; margin-right: 1rem; }
-            .mobile-table-card td:last-child { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #f3f4f6; font-weight: 700; font-size: 1.1rem; }
+            .mobile-table-card thead {
+                display: none;
+            }
+
+            .mobile-table-card tbody tr {
+                display: flex;
+                flex-direction: column;
+                background: white;
+                border: 1px solid #e5e7eb;
+                border-radius: 0.75rem;
+                margin-bottom: 1rem;
+                padding: 1rem;
+                box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            }
+
+            .mobile-table-card td {
+                display: flex;
+                justify-content: space-between;
+                padding: 0.25rem 0;
+                border: none;
+                font-size: 0.95rem;
+            }
+
+            .mobile-table-card td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: #6b7280;
+                margin-right: 1rem;
+            }
+
+            .mobile-table-card td:last-child {
+                margin-top: 0.75rem;
+                padding-top: 0.75rem;
+                border-top: 1px solid #f3f4f6;
+                font-weight: 700;
+                font-size: 1.1rem;
+            }
         }
 
-        .progress-container { width: 100%; background-color: #e5e7eb; border-radius: 9999px; height: 0.5rem; overflow: hidden; margin-top: 0.75rem; }
-        .progress-bar { height: 100%; background-color: #10b981; width: 0%; transition: width 0.3s ease-out; }
-
-        .text-danger { color: #ef4444; font-weight: 600; }
-        .text-success { color: #22c55e; font-weight: 600; }
-        
-        input[type="time"], input[type="date"], input[type="text"], select { 
-            -webkit-appearance: none; appearance: none; 
-            background-color: #fff; 
-            border: 1px solid #d1d5db; 
-            border-radius: 0.5rem; 
-            padding: 0.6rem 0.875rem; 
-            font-size: 1rem; 
-            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); 
+        .progress-container {
+            width: 100%;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            height: 0.5rem;
+            overflow: hidden;
+            margin-top: 0.75rem;
         }
-        
-        input:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2); }
 
-        #settings-panel { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .toggle-checkbox:checked { right: 0; border-color: #10b981; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
-        .kpi-card { transition: transform 0.2s; }
-        .kpi-card:active { transform: scale(0.98); }
-        .kpi-scroller { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1rem; }
+        .progress-bar {
+            height: 100%;
+            background-color: #10b981;
+            width: 0%;
+            transition: width 0.3s ease-out;
+        }
+
+        .text-danger {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .text-success {
+            color: #22c55e;
+            font-weight: 600;
+        }
+
+        input[type="time"],
+        input[type="date"],
+        input[type="text"],
+        select {
+            -webkit-appearance: none;
+            appearance: none;
+            background-color: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 0.6rem 0.875rem;
+            font-size: 1rem;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+        }
+
+        #settings-panel {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #10b981;
+        }
+
+        .toggle-checkbox:checked+.toggle-label {
+            background-color: #10b981;
+        }
+
+        .kpi-card {
+            transition: transform 0.2s;
+        }
+
+        .kpi-card:active {
+            transform: scale(0.98);
+        }
+
+        .kpi-scroller {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1rem;
+        }
+
         @media (max-width: 640px) {
-            .kpi-scroller { display: flex; overflow-x: auto; padding-bottom: 1rem; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; margin-right: -1rem; padding-right: 1rem; }
-            .kpi-scroller > * { flex: 0 0 140px; scroll-snap-align: start; }
+            .kpi-scroller {
+                display: flex;
+                overflow-x: auto;
+                padding-bottom: 1rem;
+                scroll-snap-type: x mandatory;
+                -webkit-overflow-scrolling: touch;
+                margin-right: -1rem;
+                padding-right: 1rem;
+            }
+
+            .kpi-scroller>* {
+                flex: 0 0 140px;
+                scroll-snap-align: start;
+            }
         }
-        .autocomplete-results { max-height: 200px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        .cache-badge { display: inline-flex; align-items: center; background-color: #dbeafe; color: #1e40af; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; border: 1px solid #bfdbfe; }
-        .api-badge { display: inline-flex; align-items: center; background-color: #dcfce7; color: #166534; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; border: 1px solid #bbf7d0; }
-        
+
+        .autocomplete-results {
+            max-height: 200px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .cache-badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: #dbeafe;
+            color: #1e40af;
+            padding: 0.125rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid #bfdbfe;
+        }
+
+        .api-badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: #dcfce7;
+            color: #166534;
+            padding: 0.125rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid #bbf7d0;
+        }
+
         /* TOC Badges */
-        .toc-badge { padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: white; display: inline-block; min-width: 2.5rem; text-align: center; }
-        .toc-gw { background-color: #0a4c3f; } 
-        .toc-sw { background-color: #0193d7; } 
-        .toc-vt { background-color: #b50e24; } 
-        .toc-default { background-color: #64748b; } 
+        .toc-badge {
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: white;
+            display: inline-block;
+            min-width: 2.5rem;
+            text-align: center;
+        }
+
+        .toc-gw {
+            background-color: #0a4c3f;
+        }
+
+        .toc-sw {
+            background-color: #0193d7;
+        }
+
+        .toc-vt {
+            background-color: #b50e24;
+        }
+
+        .toc-default {
+            background-color: #64748b;
+        }
     </style>
 </head>
+
 <body class="min-h-screen flex flex-col bg-slate-50">
 
     <!-- Navigation -->
@@ -79,60 +241,84 @@
                 <img src="train_icon.png" alt="Logo" class="h-9 w-9">
                 <span class="font-extrabold text-xl sm:text-2xl tracking-tight text-slate-900">RefundMyRail</span>
             </a>
-            
+
             <!-- Nav Links + Settings -->
             <div class="flex items-center gap-4 sm:gap-8">
-                 <a href="/app" class="hidden sm:block text-sm font-bold text-emerald-600 cursor-default">Search Dashboard</a>
-                 <a href="/manage" class="hidden sm:block text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors">Manage Alerts</a>
-                 
-                 <!-- Settings Toggle -->
-                 <button id="settings-toggle-button" type="button" class="p-2 rounded-lg text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors">
+                <a href="/app" class="hidden sm:block text-sm font-bold text-emerald-600 cursor-default">Search
+                    Dashboard</a>
+                <a href="/manage"
+                    class="hidden sm:block text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors">Manage
+                    Alerts</a>
+
+                <!-- Settings Toggle -->
+                <button id="settings-toggle-button" type="button"
+                    class="p-2 rounded-lg text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors">
                     <span class="sr-only">Open settings</span>
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                 </button>
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </button>
             </div>
         </div>
     </nav>
 
     <!-- Settings Panel -->
-    <div id="settings-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 hidden opacity-0 transition-opacity duration-300"></div>
-    <div id="settings-panel" class="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-2xl z-50 transform translate-x-full flex flex-col custom-scrollbar">
-        
+    <div id="settings-overlay"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 hidden opacity-0 transition-opacity duration-300"></div>
+    <div id="settings-panel"
+        class="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-2xl z-50 transform translate-x-full flex flex-col custom-scrollbar">
+
         <div class="flex-none px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
             <h2 class="text-lg font-bold text-slate-800">Settings</h2>
-            <button id="close-settings-button" class="p-2 bg-white rounded-full shadow-sm text-slate-400 hover:text-red-500 border border-slate-200 transition-colors">
-                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            <button id="close-settings-button"
+                class="p-2 bg-white rounded-full shadow-sm text-slate-400 hover:text-red-500 border border-slate-200 transition-colors">
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
             </button>
         </div>
-        
+
         <div class="flex-grow p-6 overflow-y-auto space-y-8">
-             <!-- Ticket Settings -->
-             <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-                 <div class="flex items-center mb-4">
-                     <div class="p-2 bg-emerald-100 rounded-lg mr-3 text-emerald-600">
-                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                     </div>
-                     <h3 class="font-bold text-slate-900">Ticket Price</h3>
-                 </div>
-                 <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Annual Season Ticket Cost</label>
-                 <div class="relative">
-                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">£</span>
-                     <input type="text" id="ticket-price-settings" inputmode="decimal" value="7437.92" class="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-lg font-bold text-slate-900 placeholder-slate-300">
-                 </div>
-             </div>
+            <!-- Ticket Settings -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <div class="flex items-center mb-4">
+                    <div class="p-2 bg-emerald-100 rounded-lg mr-3 text-emerald-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-slate-900">Ticket Price</h3>
+                </div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Annual Season
+                    Ticket Cost</label>
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">£</span>
+                    <input type="text" id="ticket-price-settings" inputmode="decimal" value="7437.92"
+                        class="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-lg font-bold text-slate-900 placeholder-slate-300">
+                </div>
+            </div>
         </div>
-        
+
         <div class="flex-none p-6 border-t border-slate-100 bg-slate-50 safe-area-bottom">
-             <button type="button" id="save-settings-button" class="w-full bg-emerald-600 text-white py-4 px-4 rounded-xl shadow-lg hover:bg-emerald-500 active:scale-[0.98] transition-all text-base font-bold">Save Changes</button>
+            <button type="button" id="save-settings-button"
+                class="w-full bg-emerald-600 text-white py-4 px-4 rounded-xl shadow-lg hover:bg-emerald-500 active:scale-[0.98] transition-all text-base font-bold">Save
+                Changes</button>
         </div>
     </div>
 
     <!-- Main Content -->
     <main class="flex-grow max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 space-y-8">
-        
+
         <!-- Search Card -->
         <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-             <div class="p-6 sm:p-8 bg-white border-b border-slate-100">
+            <div class="p-6 sm:p-8 bg-white border-b border-slate-100">
                 <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Find Delays</h1>
                 <p class="text-slate-500 text-sm mt-1 font-medium">Analyse your commute for compensation.</p>
             </div>
@@ -143,19 +329,27 @@
                 <div class="space-y-5">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div class="autocomplete-container relative">
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Home Station</label>
-                            <input type="text" id="setting-outbound-from" class="w-full rounded-xl border-slate-200 py-3 text-sm font-semibold text-slate-700 focus:ring-emerald-500 focus:border-emerald-500" placeholder="Station..." value="">
-                            <div class="autocomplete-results hidden absolute w-full bg-white border border-slate-200 rounded-b-xl shadow-xl z-50" id="results-setting-outbound-from"></div>
-                            <input type="hidden" id="setting-outbound-from-code" value=""> 
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Home
+                                Station</label>
+                            <input type="text" id="setting-outbound-from"
+                                class="w-full rounded-xl border-slate-200 py-3 text-sm font-semibold text-slate-700 focus:ring-emerald-500 focus:border-emerald-500"
+                                placeholder="Station..." value="">
+                            <div class="autocomplete-results hidden absolute w-full bg-white border border-slate-200 rounded-b-xl shadow-xl z-50"
+                                id="results-setting-outbound-from"></div>
+                            <input type="hidden" id="setting-outbound-from-code" value="">
                         </div>
                         <div class="autocomplete-container relative">
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Work Station</label>
-                            <input type="text" id="setting-outbound-to" class="w-full rounded-xl border-slate-200 py-3 text-sm font-semibold text-slate-700 focus:ring-emerald-500 focus:border-emerald-500" placeholder="Station..." value="">
-                            <div class="autocomplete-results hidden absolute w-full bg-white border border-slate-200 rounded-b-xl shadow-xl z-50" id="results-setting-outbound-to"></div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Work
+                                Station</label>
+                            <input type="text" id="setting-outbound-to"
+                                class="w-full rounded-xl border-slate-200 py-3 text-sm font-semibold text-slate-700 focus:ring-emerald-500 focus:border-emerald-500"
+                                placeholder="Station..." value="">
+                            <div class="autocomplete-results hidden absolute w-full bg-white border border-slate-200 rounded-b-xl shadow-xl z-50"
+                                id="results-setting-outbound-to"></div>
                             <input type="hidden" id="setting-outbound-to-code" value="">
                         </div>
                     </div>
-                    
+
                     <!-- Hidden fields for return journey -->
                     <input type="hidden" id="setting-inbound-from" value="">
                     <input type="hidden" id="setting-inbound-from-code" value="">
@@ -172,49 +366,100 @@
                         <div class="flex bg-slate-100 p-1.5 rounded-xl">
                             <label class="flex-1 text-center cursor-pointer">
                                 <input type="radio" name="search-type" value="week" class="sr-only peer">
-                                <span class="block py-2.5 text-sm font-bold text-slate-500 rounded-lg peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm transition-all">Week View</span>
+                                <span
+                                    class="block py-2.5 text-sm font-bold text-slate-500 rounded-lg peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm transition-all">Week
+                                    View</span>
                             </label>
                             <label class="flex-1 text-center cursor-pointer">
                                 <input type="radio" name="search-type" value="day" class="sr-only peer" checked>
-                                <span class="block py-2.5 text-sm font-bold text-slate-500 rounded-lg peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm transition-all">Single Day</span>
+                                <span
+                                    class="block py-2.5 text-sm font-bold text-slate-500 rounded-lg peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm transition-all">Single
+                                    Day</span>
                             </label>
                         </div>
                     </div>
-                    
+
                     <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3" id="date-picker-label">Select Day</label>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3"
+                            id="date-picker-label">Select Day</label>
                         <div class="relative">
-                            <input type="date" id="date-picker" class="block w-full px-4 py-3 rounded-xl border-slate-200 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-slate-800 font-semibold bg-slate-50 hover:bg-white transition-colors">
+                            <input type="date" id="date-picker"
+                                class="block w-full px-4 py-3 rounded-xl border-slate-200 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-slate-800 font-semibold bg-slate-50 hover:bg-white transition-colors">
                         </div>
-                        <p id="week-commencing-label" class="text-xs text-emerald-600 mt-2 font-semibold pl-1" style="visibility: hidden;">w/c ...</p>
+                        <p id="week-commencing-label" class="text-xs text-emerald-600 mt-2 font-semibold pl-1"
+                            style="visibility: hidden;">w/c ...</p>
                     </div>
                 </div>
 
                 <!-- Days in Office (Hidden for single day mode default) -->
                 <div id="days-in-office-group" style="display: none;">
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Days Travelled</label>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Days
+                        Travelled</label>
                     <div class="flex justify-between gap-2 sm:gap-4">
-                        <label class="flex flex-col items-center cursor-pointer group select-none"><input type="checkbox" name="daysInOffice" value="1" checked class="peer sr-only"><div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-sm font-bold peer-checked:bg-emerald-500 peer-checked:text-white transition-all group-active:scale-90 border border-transparent peer-checked:border-emerald-600 shadow-sm">M</div></label>
-                        <label class="flex flex-col items-center cursor-pointer group select-none"><input type="checkbox" name="daysInOffice" value="2" checked class="peer sr-only"><div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-sm font-bold peer-checked:bg-emerald-500 peer-checked:text-white transition-all group-active:scale-90 border border-transparent peer-checked:border-emerald-600 shadow-sm">T</div></label>
-                        <label class="flex flex-col items-center cursor-pointer group select-none"><input type="checkbox" name="daysInOffice" value="3" checked class="peer sr-only"><div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-sm font-bold peer-checked:bg-emerald-500 peer-checked:text-white transition-all group-active:scale-90 border border-transparent peer-checked:border-emerald-600 shadow-sm">W</div></label>
-                        <label class="flex flex-col items-center cursor-pointer group select-none"><input type="checkbox" name="daysInOffice" value="4" checked class="peer sr-only"><div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-sm font-bold peer-checked:bg-emerald-500 peer-checked:text-white transition-all group-active:scale-90 border border-transparent peer-checked:border-emerald-600 shadow-sm">T</div></label>
-                        <label class="flex flex-col items-center cursor-pointer group select-none"><input type="checkbox" name="daysInOffice" value="5" class="peer sr-only"><div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-sm font-bold peer-checked:bg-emerald-500 peer-checked:text-white transition-all group-active:scale-90 border border-transparent peer-checked:border-emerald-600 shadow-sm">F</div></label>
+                        <label class="flex flex-col items-center cursor-pointer group select-none"><input
+                                type="checkbox" name="daysInOffice" value="1" checked class="peer sr-only">
+                            <div
+                                class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-sm font-bold peer-checked:bg-emerald-500 peer-checked:text-white transition-all group-active:scale-90 border border-transparent peer-checked:border-emerald-600 shadow-sm">
+                                M</div>
+                        </label>
+                        <label class="flex flex-col items-center cursor-pointer group select-none"><input
+                                type="checkbox" name="daysInOffice" value="2" checked class="peer sr-only">
+                            <div
+                                class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-sm font-bold peer-checked:bg-emerald-500 peer-checked:text-white transition-all group-active:scale-90 border border-transparent peer-checked:border-emerald-600 shadow-sm">
+                                T</div>
+                        </label>
+                        <label class="flex flex-col items-center cursor-pointer group select-none"><input
+                                type="checkbox" name="daysInOffice" value="3" checked class="peer sr-only">
+                            <div
+                                class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-sm font-bold peer-checked:bg-emerald-500 peer-checked:text-white transition-all group-active:scale-90 border border-transparent peer-checked:border-emerald-600 shadow-sm">
+                                W</div>
+                        </label>
+                        <label class="flex flex-col items-center cursor-pointer group select-none"><input
+                                type="checkbox" name="daysInOffice" value="4" checked class="peer sr-only">
+                            <div
+                                class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-sm font-bold peer-checked:bg-emerald-500 peer-checked:text-white transition-all group-active:scale-90 border border-transparent peer-checked:border-emerald-600 shadow-sm">
+                                T</div>
+                        </label>
+                        <label class="flex flex-col items-center cursor-pointer group select-none"><input
+                                type="checkbox" name="daysInOffice" value="5" class="peer sr-only">
+                            <div
+                                class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-sm font-bold peer-checked:bg-emerald-500 peer-checked:text-white transition-all group-active:scale-90 border border-transparent peer-checked:border-emerald-600 shadow-sm">
+                                F</div>
+                        </label>
                     </div>
                 </div>
 
                 <!-- Time Selection -->
                 <div class="space-y-6 pt-4 border-t border-slate-100">
-                     <div class="grid grid-cols-2 gap-6">
-                         <div class="col-span-2 flex justify-between items-center"><span class="text-sm font-bold text-slate-900">Morning Commute</span></div>
-                         <div><label class="block text-[10px] text-slate-400 uppercase tracking-wider mb-2 font-bold">Depart After</label><input type="time" id="from-time-outbound" value="07:00" class="w-full rounded-xl border-slate-200 text-sm py-3 font-semibold text-slate-700 focus:border-emerald-500 focus:ring-emerald-500"></div>
-                         <div><label class="block text-[10px] text-slate-400 uppercase tracking-wider mb-2 font-bold">Depart Before</label><input type="time" id="to-time-outbound" value="07:30" class="w-full rounded-xl border-slate-200 text-sm py-3 font-semibold text-slate-700 focus:border-emerald-500 focus:ring-emerald-500"></div>
-                     </div>
-                     
-                     <div class="grid grid-cols-2 gap-6">
-                         <div class="col-span-2 flex justify-between items-center mt-2"><span class="text-sm font-bold text-slate-900">Evening Commute</span></div>
-                         <div><label class="block text-[10px] text-slate-400 uppercase tracking-wider mb-2 font-bold">Depart After</label><input type="time" id="from-time-inbound" value="17:00" class="w-full rounded-xl border-slate-200 text-sm py-3 font-semibold text-slate-700 focus:border-emerald-500 focus:ring-emerald-500"></div>
-                         <div><label class="block text-[10px] text-slate-400 uppercase tracking-wider mb-2 font-bold">Depart Before</label><input type="time" id="to-time-inbound" value="17:30" class="w-full rounded-xl border-slate-200 text-sm py-3 font-semibold text-slate-700 focus:border-emerald-500 focus:ring-emerald-500"></div>
-                     </div>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="col-span-2 flex justify-between items-center"><span
+                                class="text-sm font-bold text-slate-900">Morning Commute</span></div>
+                        <div><label
+                                class="block text-[10px] text-slate-400 uppercase tracking-wider mb-2 font-bold">Depart
+                                After</label><input type="time" id="from-time-outbound" value="07:00"
+                                class="w-full rounded-xl border-slate-200 text-sm py-3 font-semibold text-slate-700 focus:border-emerald-500 focus:ring-emerald-500">
+                        </div>
+                        <div><label
+                                class="block text-[10px] text-slate-400 uppercase tracking-wider mb-2 font-bold">Depart
+                                Before</label><input type="time" id="to-time-outbound" value="07:30"
+                                class="w-full rounded-xl border-slate-200 text-sm py-3 font-semibold text-slate-700 focus:border-emerald-500 focus:ring-emerald-500">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="col-span-2 flex justify-between items-center mt-2"><span
+                                class="text-sm font-bold text-slate-900">Evening Commute</span></div>
+                        <div><label
+                                class="block text-[10px] text-slate-400 uppercase tracking-wider mb-2 font-bold">Depart
+                                After</label><input type="time" id="from-time-inbound" value="17:00"
+                                class="w-full rounded-xl border-slate-200 text-sm py-3 font-semibold text-slate-700 focus:border-emerald-500 focus:ring-emerald-500">
+                        </div>
+                        <div><label
+                                class="block text-[10px] text-slate-400 uppercase tracking-wider mb-2 font-bold">Depart
+                                Before</label><input type="time" id="to-time-inbound" value="17:30"
+                                class="w-full rounded-xl border-slate-200 text-sm py-3 font-semibold text-slate-700 focus:border-emerald-500 focus:ring-emerald-500">
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Progress Bar -->
@@ -224,27 +469,43 @@
                         <span id="progress-percent">0%</span>
                     </div>
                     <div class="progress-container bg-slate-200 h-2">
-                        <div id="progress-bar" class="progress-bar bg-emerald-500 h-2 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+                        <div id="progress-bar"
+                            class="progress-bar bg-emerald-500 h-2 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]">
+                        </div>
                     </div>
                 </div>
 
                 <!-- Action Button -->
-                <button type="submit" id="submit-button" class="w-full bg-emerald-600 text-white py-4 rounded-2xl shadow-lg shadow-emerald-200 hover:shadow-emerald-300 hover:bg-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 transition-all duration-200 flex justify-center items-center text-lg font-bold active:scale-[0.98] transform">
+                <button type="submit" id="submit-button"
+                    class="w-full bg-emerald-600 text-white py-4 rounded-2xl shadow-lg shadow-emerald-200 hover:shadow-emerald-300 hover:bg-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 transition-all duration-200 flex justify-center items-center text-lg font-bold active:scale-[0.98] transform">
                     <span id="btn-text">Check Performance</span>
-                    <svg id="btn-spinner" class="animate-spin ml-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <svg id="btn-spinner" class="animate-spin ml-3 h-5 w-5 text-white hidden"
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
                 </button>
-                
+
                 <!-- Status Message and Cache Indicator -->
                 <div id="status-loading-container" class="flex justify-center items-center mt-6 min-h-[1.5rem] gap-2">
-                     <div id="status-message" class="text-sm text-center font-medium text-slate-500"></div>
-                     <span id="cache-indicator" class="cache-badge hidden" title="Data loaded from internal cache">
-                        <svg class="w-3 h-3 mr-1.5" fill="currentColor" viewBox="0 0 20 20"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path><path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path></svg>
+                    <div id="status-message" class="text-sm text-center font-medium text-slate-500"></div>
+                    <span id="cache-indicator" class="cache-badge hidden" title="Data loaded from internal cache">
+                        <svg class="w-3 h-3 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
+                            <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
+                        </svg>
                         Cached Data
-                     </span>
-                     <span id="api-indicator" class="api-badge hidden" title="Data fetched live from National Rail">
-                        <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </span>
+                    <span id="api-indicator" class="api-badge hidden" title="Data fetched live from National Rail">
+                        <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
                         Live Data
-                     </span>
+                    </span>
                 </div>
             </form>
         </div>
@@ -253,60 +514,90 @@
         <div id="results-area" class="hidden space-y-8 transition-opacity duration-500 ease-in-out pb-12">
             <!-- Summary KPI Card -->
             <div>
-                <h2 id="in-office-summary-heading" class="text-lg font-extrabold text-slate-900 mb-4 px-2">Results Summary</h2>
-                
+                <h2 id="in-office-summary-heading" class="text-lg font-extrabold text-slate-900 mb-4 px-2">Results
+                    Summary</h2>
+
                 <!-- Refund Total Hero -->
-                <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-3xl p-8 text-white shadow-xl shadow-emerald-100 mb-6 flex justify-between items-center transform hover:scale-[1.01] transition-transform duration-300">
+                <div
+                    class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-3xl p-8 text-white shadow-xl shadow-emerald-100 mb-6 flex justify-between items-center transform hover:scale-[1.01] transition-transform duration-300">
                     <div>
                         <p class="text-emerald-100 text-sm font-bold uppercase tracking-wider mb-1">Estimated Refund</p>
                         <p id="total-refund-kpi-office" class="text-5xl font-extrabold tracking-tight">£0.00</p>
                     </div>
                     <div class="bg-white/10 p-4 rounded-2xl backdrop-blur-sm border border-white/10">
-                         <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
                     </div>
                 </div>
 
                 <!-- Scrollable Stats -->
                 <div class="kpi-scroller px-1">
                     <!-- Cancelled -->
-                    <div class="kpi-card bg-red-500 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all text-white">
+                    <div
+                        class="kpi-card bg-red-500 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all text-white">
                         <div class="flex items-start justify-between mb-3">
-                            <span class="bg-white/20 p-2 rounded-xl"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></span>
+                            <span class="bg-white/20 p-2 rounded-xl"><svg class="w-5 h-5" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12" />
+                                </svg></span>
                             <span class="text-3xl font-extrabold" id="cancelled-kpi-office">0</span>
                         </div>
                         <p class="text-xs font-bold text-white/80 uppercase tracking-wider">Cancelled</p>
                     </div>
                     <!-- Severe -->
-                    <div class="kpi-card bg-red-600 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all text-white">
-                         <div class="flex items-start justify-between mb-3">
-                             <span class="bg-white/20 p-2 rounded-xl"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></span>
-                             <span class="text-3xl font-extrabold" id="delayed-120-plus-office">0</span>
+                    <div
+                        class="kpi-card bg-red-600 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all text-white">
+                        <div class="flex items-start justify-between mb-3">
+                            <span class="bg-white/20 p-2 rounded-xl"><svg class="w-5 h-5" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg></span>
+                            <span class="text-3xl font-extrabold" id="delayed-120-plus-office">0</span>
                         </div>
                         <p class="text-xs font-bold text-white/80 uppercase tracking-wider">Severe (120+)</p>
                     </div>
                     <!-- Major -->
-                    <div class="kpi-card bg-orange-500 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all text-white">
+                    <div
+                        class="kpi-card bg-orange-500 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all text-white">
                         <div class="flex items-start justify-between mb-3">
-                            <span class="bg-white/20 p-2 rounded-xl"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></span>
+                            <span class="bg-white/20 p-2 rounded-xl"><svg class="w-5 h-5" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg></span>
                             <span class="text-3xl font-extrabold" id="delayed-60-119-office">0</span>
                         </div>
                         <p class="text-xs font-bold text-white/80 uppercase tracking-wider">Long (60+)</p>
                     </div>
                     <!-- Medium -->
-                    <div class="kpi-card bg-amber-500 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all text-white">
+                    <div
+                        class="kpi-card bg-amber-500 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all text-white">
                         <div class="flex items-start justify-between mb-3">
-                            <span class="bg-white/20 p-2 rounded-xl"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></span>
+                            <span class="bg-white/20 p-2 rounded-xl"><svg class="w-5 h-5" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg></span>
                             <span class="text-3xl font-extrabold" id="delayed-30-59-office">0</span>
                         </div>
-                         <p class="text-xs font-bold text-white/80 uppercase tracking-wider">Medium (30+)</p>
+                        <p class="text-xs font-bold text-white/80 uppercase tracking-wider">Medium (30+)</p>
                     </div>
                     <!-- Minor -->
-                    <div class="kpi-card bg-yellow-500 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all text-white">
+                    <div
+                        class="kpi-card bg-yellow-500 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all text-white">
                         <div class="flex items-start justify-between mb-3">
-                            <span class="bg-white/20 p-2 rounded-xl"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></span>
+                            <span class="bg-white/20 p-2 rounded-xl"><svg class="w-5 h-5" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg></span>
                             <span class="text-3xl font-extrabold" id="delayed-15-29-office">0</span>
                         </div>
-                         <p class="text-xs font-bold text-white/80 uppercase tracking-wider">Short (15+)</p>
+                        <p class="text-xs font-bold text-white/80 uppercase tracking-wider">Short (15+)</p>
                     </div>
                 </div>
             </div>
@@ -319,7 +610,9 @@
                         <span class="text-xs font-bold text-slate-400 uppercase tracking-wider mr-3">Delays Only</span>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="toggle-office-delays" class="sr-only peer" checked>
-                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                            <div
+                                class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500">
+                            </div>
                         </label>
                     </div>
                 </div>
@@ -327,19 +620,37 @@
                     <table class="min-w-full mobile-table-card" id="results-table-office">
                         <thead class="bg-slate-50 border-b border-slate-100">
                             <tr>
-                                <th class="py-4 px-6 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Date</th>
-                                <th class="py-4 px-6 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Type</th>
-                                <th class="py-4 px-6 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Rail Operator</th>
-                                <th class="py-4 px-6 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Sch. Dep</th>
-                                <th class="py-4 px-6 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Act. Arr</th>
-                                <th class="py-4 px-6 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Delay</th>
-                                <th class="py-4 px-6 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Refund</th>
+                                <th
+                                    class="py-4 px-6 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                    Date</th>
+                                <th
+                                    class="py-4 px-6 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                    Type</th>
+                                <th
+                                    class="py-4 px-6 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                    Rail Operator</th>
+                                <th
+                                    class="py-4 px-6 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                    Sch. Dep</th>
+                                <th
+                                    class="py-4 px-6 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                    Act. Arr</th>
+                                <th
+                                    class="py-4 px-6 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                    Delay</th>
+                                <th
+                                    class="py-4 px-6 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                    Refund</th>
+                                <th
+                                    class="py-4 px-6 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                    Claim</th>
                             </tr>
                         </thead>
                         <tbody id="results-body-office" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
-                <p id="no-office-results" class="hidden text-center text-slate-500 py-12 text-sm font-medium">No matching journeys found.</p>
+                <p id="no-office-results" class="hidden text-center text-slate-500 py-12 text-sm font-medium">No
+                    matching journeys found.</p>
             </div>
         </div>
 
@@ -356,7 +667,7 @@
     <script src="config.js"></script>
     <!-- Load Station Data second -->
     <script src="station_data.js"></script>
-    
+
     <script>
         // ... (Dom Elements) ...
         const els = {
@@ -439,7 +750,7 @@
             els.datePicker.value = formatDateForAPI(today);
             updateWeekLabel();
             loadSettings();
-            
+
             els.settingsToggle.addEventListener('click', () => toggleSettings(true));
             els.settingsClose.addEventListener('click', () => toggleSettings(false));
             els.settingsOverlay.addEventListener('click', () => toggleSettings(false));
@@ -452,10 +763,10 @@
                     els.officeDaysContainer.style.display = isWeek ? 'block' : 'none';
                     document.getElementById('date-picker-label').innerText = isWeek ? 'Select Week' : 'Select Day';
                     updateWeekLabel();
-                    if(isWeek) {
-                         els.wcLabel.style.visibility = 'visible';
+                    if (isWeek) {
+                        els.wcLabel.style.visibility = 'visible';
                     } else {
-                         els.wcLabel.style.visibility = 'hidden';
+                        els.wcLabel.style.visibility = 'hidden';
                     }
                 });
             });
@@ -463,14 +774,14 @@
                 const val = parseFloat(els.priceInput.value.replace(/[^0-9.]/g, '')) || 0;
                 els.priceInput.value = val.toFixed(2);
             });
-            
+
             if (typeof stationData !== 'undefined') {
-                 setupAutocomplete(els.outFrom, document.getElementById('results-setting-outbound-from'), els.outFromCode, true);
-                 setupAutocomplete(els.outTo, document.getElementById('results-setting-outbound-to'), els.outToCode, true);
-                 setupAutocomplete(els.inFrom, document.getElementById('results-setting-inbound-from'), els.inFromCode, false); 
-                 setupAutocomplete(els.inTo, document.getElementById('results-setting-inbound-to'), els.inToCode, false); 
+                setupAutocomplete(els.outFrom, document.getElementById('results-setting-outbound-from'), els.outFromCode, true);
+                setupAutocomplete(els.outTo, document.getElementById('results-setting-outbound-to'), els.outToCode, true);
+                setupAutocomplete(els.inFrom, document.getElementById('results-setting-inbound-from'), els.inFromCode, false);
+                setupAutocomplete(els.inTo, document.getElementById('results-setting-inbound-to'), els.inToCode, false);
             }
-            
+
             els.toggleDelay.addEventListener('change', () => renderTable(lastResults));
 
             const savedData = getJobFromStorage();
@@ -484,7 +795,7 @@
             // If we have saved metrics job IDs, try to recover the session immediately
             if (!savedData || !savedData.metricsJobIds || savedData.metricsJobIds.length === 0) {
                 clearJobStorage();
-                return; 
+                return;
             }
 
             setLoading(true, "Restoring previous session...");
@@ -497,11 +808,11 @@
                 // Note: savedData.metricsJobIds is now expected to be an array of { jobId, req } objects.
                 // We need the 'req' object to reconstruct the service list correctly (Date, Type, From, To).
                 const metricJobObjects = savedData.metricsJobIds;
-                
+
                 const metricResults = await Promise.all(metricJobObjects.map(async (item) => {
                     // If the stored item is just a string ID (legacy), we can't fully recover metadata, so fail gracefully
                     if (typeof item === 'string') throw new Error("Legacy storage format");
-                    
+
                     const data = await pollJob(item.jobId);
                     return { data, req: item.req };
                 }));
@@ -514,20 +825,20 @@
                 metricResults.forEach(result => {
                     const data = result.data;
                     const req = result.req; // Restored request metadata
-                    
+
                     if (data._fromCache) hasCachedData = true;
-                    
+
                     if (data.Services) {
                         data.Services.forEach(s => {
                             const rid = s.serviceAttributesMetrics?.rids?.[0];
                             if (rid && !allRids.includes(rid)) {
                                 allRids.push(rid);
-                                allServices.push({ 
-                                    rid, 
-                                    date: req.d, 
-                                    type: req.j.type, 
-                                    from: req.j.from, 
-                                    to: req.j.to 
+                                allServices.push({
+                                    rid,
+                                    date: req.d,
+                                    type: req.j.type,
+                                    from: req.j.from,
+                                    to: req.j.to
                                 });
                             }
                         });
@@ -538,11 +849,11 @@
 
                 // 3. Resume Phase 2: Detail Fetching
                 if (allServices.length === 0) {
-                     showStatus("No services found in previous session.", "info");
-                     setLoading(false);
-                     els.progressContainer.classList.add('hidden');
-                     clearJobStorage();
-                     return;
+                    showStatus("No services found in previous session.", "info");
+                    setLoading(false);
+                    els.progressContainer.classList.add('hidden');
+                    clearJobStorage();
+                    return;
                 }
 
                 await analyzeServices(allServices);
@@ -567,44 +878,44 @@
                     if (s.outToCode) els.outToCode.value = s.outToCode;
                     if (s.outFromDisplay) els.outFrom.value = s.outFromDisplay;
                     if (s.outToDisplay) els.outTo.value = s.outToDisplay;
-                    if(s.fromTimeOutbound) els.timeOutStart.value = s.fromTimeOutbound;
-                    if(s.toTimeOutbound) els.timeOutEnd.value = s.toTimeOutbound;
-                    if(s.fromTimeInbound) els.timeInStart.value = s.fromTimeInbound;
-                    if(s.toTimeInbound) els.timeInEnd.value = s.toTimeInbound;
-                    
+                    if (s.fromTimeOutbound) els.timeOutStart.value = s.fromTimeOutbound;
+                    if (s.toTimeOutbound) els.timeOutEnd.value = s.toTimeOutbound;
+                    if (s.fromTimeInbound) els.timeInStart.value = s.fromTimeInbound;
+                    if (s.toTimeInbound) els.timeInEnd.value = s.toTimeInbound;
+
                     if (s.officeDays) {
                         els.officeDaysInputs.forEach(cb => cb.checked = s.officeDays.includes(cb.value));
                     }
-                } catch(e) {
+                } catch (e) {
                     console.error("Error loading settings", e);
                 }
             }
             syncReturnJourney();
             updateRouteLabels();
         }
-        
+
         function saveSettings() {
-             const days = Array.from(els.officeDaysInputs).filter(c => c.checked).map(c => c.value);
-             const s = { ticketPrice: els.priceInput.value, outFromCode: els.outFromCode.value, outToCode: els.outToCode.value, outFromDisplay: els.outFrom.value, outToDisplay: els.outTo.value, fromTimeOutbound: els.timeOutStart.value, toTimeOutbound: els.timeOutEnd.value, fromTimeInbound: els.timeInStart.value, toTimeInbound: els.timeInEnd.value, officeDays: days };
-             localStorage.setItem('railDelaySettings', JSON.stringify(s));
-             toggleSettings(false); showStatus('Settings saved', 'success'); updateRouteLabels();
+            const days = Array.from(els.officeDaysInputs).filter(c => c.checked).map(c => c.value);
+            const s = { ticketPrice: els.priceInput.value, outFromCode: els.outFromCode.value, outToCode: els.outToCode.value, outFromDisplay: els.outFrom.value, outToDisplay: els.outTo.value, fromTimeOutbound: els.timeOutStart.value, toTimeOutbound: els.timeOutEnd.value, fromTimeInbound: els.timeInStart.value, toTimeInbound: els.timeInEnd.value, officeDays: days };
+            localStorage.setItem('railDelaySettings', JSON.stringify(s));
+            toggleSettings(false); showStatus('Settings saved', 'success'); updateRouteLabels();
         }
         function syncReturnJourney() { els.inFrom.value = els.outTo.value; els.inFromCode.value = els.outToCode.value; els.inTo.value = els.outFrom.value; els.inToCode.value = els.outFromCode.value; }
-        function updateRouteLabels() { 
+        function updateRouteLabels() {
             const outCode = els.outFromCode.value || '?';
             const inCode = els.outToCode.value || '?';
-            if(els.outRouteDisplay) els.outRouteDisplay.textContent = '';
-            if(els.inRouteDisplay) els.inRouteDisplay.textContent = '';
+            if (els.outRouteDisplay) els.outRouteDisplay.textContent = '';
+            if (els.inRouteDisplay) els.inRouteDisplay.textContent = '';
         }
         function toggleSettings(show) { if (show) { els.settingsOverlay.classList.remove('hidden'); els.settingsPanel.classList.remove('translate-x-full'); setTimeout(() => els.settingsOverlay.classList.remove('opacity-0'), 10); } else { els.settingsOverlay.classList.add('opacity-0'); els.settingsPanel.classList.add('translate-x-full'); setTimeout(() => els.settingsOverlay.classList.add('hidden'), 300); } }
 
-        let lastResults = []; 
+        let lastResults = [];
         const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
         async function pollJob(jobId) {
-            const MAX_ATTEMPTS = 300; 
+            const MAX_ATTEMPTS = 300;
             let attempts = 0;
-            while(attempts < MAX_ATTEMPTS) {
+            while (attempts < MAX_ATTEMPTS) {
                 try {
                     const response = await fetch(`/api/job/${jobId}`);
                     if (response.status === 404) throw new Error('Job expired or not found.');
@@ -612,7 +923,7 @@
                     const json = await response.json();
                     if (json.status === 'completed') return json.data;
                     if (json.status === 'failed') throw new Error(json.error || 'Job failed');
-                    await wait(2000); 
+                    await wait(2000);
                     attempts++;
                 } catch (e) { throw e; }
             }
@@ -622,26 +933,26 @@
         // --- NEW: Extracted Analysis Logic for reuse ---
         async function analyzeServices(allServices) {
             updateProgress(40, 100, `Analyzing ${allServices.length} trains...`);
-            
+
             let detailJobIds = [];
             for (const svc of allServices) {
-                const res = await fetch(DETAILS_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ rid: svc.rid }) });
-                if(res.ok) {
+                const res = await fetch(DETAILS_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rid: svc.rid }) });
+                if (res.ok) {
                     const { jobId } = await res.json();
                     detailJobIds.push({ jobId, svc });
                 }
             }
-            
+
             let completedDetails = 0;
             let detailedServices = [];
-            
+
             await Promise.all(detailJobIds.map(async (item) => {
                 try {
                     const detailsData = await pollJob(item.jobId);
                     completedDetails++;
                     const prog = 40 + Math.round((completedDetails / detailJobIds.length) * 50);
                     updateProgress(prog, 100, `Analyzing ${completedDetails}/${detailJobIds.length} trains...`);
-                    
+
                     if (detailsData) {
                         const locs = detailsData.serviceAttributesDetails?.locations || [];
                         const dep = locs.find(l => l.location === item.svc.from);
@@ -649,42 +960,42 @@
                         if (dep && arr) {
                             const isCancelled = !arr.actual_ta || arr.actual_ta === "";
                             let delay = 0;
-                            if(!isCancelled) {
+                            if (!isCancelled) {
                                 const schTime = parseApiTime(arr.gbtt_pta);
                                 const actTime = parseApiTime(arr.actual_ta);
-                                if(schTime && actTime) {
-                                    if(actTime < schTime - 43200000) actTime.setDate(actTime.getDate() + 1);
+                                if (schTime && actTime) {
+                                    if (actTime < schTime - 43200000) actTime.setDate(actTime.getDate() + 1);
                                     delay = Math.max(0, Math.round((actTime - schTime) / 60000));
                                 }
                             }
-                            detailedServices.push({ 
-                                date: item.svc.date, 
-                                type: item.svc.type, 
-                                schDep: dep.gbtt_ptd, 
-                                schArr: arr.gbtt_pta, 
-                                actArr: arr.actual_ta, 
-                                delay: delay, 
+                            detailedServices.push({
+                                date: item.svc.date,
+                                type: item.svc.type,
+                                schDep: dep.gbtt_ptd,
+                                schArr: arr.gbtt_pta,
+                                actArr: arr.actual_ta,
+                                delay: delay,
                                 isCancelled: isCancelled,
-                                toc: detailsData.serviceAttributesDetails.toc_code 
+                                toc: detailsData.serviceAttributesDetails.toc_code
                             });
                         }
                     }
-                } catch(e) { console.warn(e); }
+                } catch (e) { console.warn(e); }
             }));
 
             updateProgress(100, 100, "Finalizing...");
-            
-            detailedServices.sort((a,b) => {
-                if(a.date !== b.date) return a.date.localeCompare(b.date);
+
+            detailedServices.sort((a, b) => {
+                if (a.date !== b.date) return a.date.localeCompare(b.date);
                 return a.schDep.localeCompare(b.schDep);
             });
-            
+
             lastResults = detailedServices;
             calculateKPIs(detailedServices);
             renderTable(detailedServices);
-            
+
             els.resultsArea.classList.remove('hidden');
-            els.progressContainer.classList.add('hidden'); 
+            els.progressContainer.classList.add('hidden');
             showStatus("Analysis Complete", "success");
             clearJobStorage();
             setTimeout(() => els.resultsArea.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
@@ -694,13 +1005,13 @@
         async function handleSearch(e) {
             e.preventDefault();
             if (typeof METRICS_URL === 'undefined') { showStatus('Config Error', 'error'); return; }
-            
+
             setLoading(true);
             els.resultsArea.classList.add('hidden');
             els.progressContainer.classList.remove('hidden');
             els.cacheIndicator.classList.add('hidden');
             els.apiIndicator.classList.add('hidden');
-            
+
             updateProgress(0, 100, "Initializing...");
 
             const searchType = document.querySelector('input[name="search-type"]:checked').value;
@@ -733,39 +1044,39 @@
 
             let allServices = [];
             let allRids = [];
-            let hasCachedData = false; 
+            let hasCachedData = false;
             let metricRequests = [];
 
             for (const d of daysToFetch) {
                 const dayDate = new Date(d);
-                const dayIndex = dayDate.getDay(); 
-                if(isWeek && !officeDays.has(dayIndex)) continue;
-                if(!isWeek && (dayIndex === 0 || dayIndex === 6)) { showStatus("Weekend selected.", "error"); setLoading(false); return; }
+                const dayIndex = dayDate.getDay();
+                if (isWeek && !officeDays.has(dayIndex)) continue;
+                if (!isWeek && (dayIndex === 0 || dayIndex === 6)) { showStatus("Weekend selected.", "error"); setLoading(false); return; }
                 for (const j of journeys) { metricRequests.push({ d, j }); }
             }
-            
+
             updateProgress(5, 100, "Queuing search requests...");
-            
+
             let metricJobIds = [];
             try {
                 for (const req of metricRequests) {
-                     const payload = {
+                    const payload = {
                         from_loc: req.j.from, to_loc: req.j.to,
-                        from_time: req.j.start.replace(':',''), to_time: req.j.end.replace(':',''),
+                        from_time: req.j.start.replace(':', ''), to_time: req.j.end.replace(':', ''),
                         from_date: req.d, to_date: req.d, days: "WEEKDAY"
                     };
-                    const res = await fetch(METRICS_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-                    if(!res.ok) throw new Error("Submit failed");
+                    const res = await fetch(METRICS_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!res.ok) throw new Error("Submit failed");
                     const { jobId } = await res.json();
                     metricJobIds.push({ jobId, req });
                 }
 
                 // UPDATED: Save full object including 'req' metadata, not just IDs
                 saveJobToStorage({ metricsJobIds: metricJobIds });
-                
+
                 let completedMetrics = 0;
                 updateProgress(10, 100, "Waiting for service lists...");
-                
+
                 const metricResults = await Promise.all(metricJobIds.map(async (item) => {
                     const data = await pollJob(item.jobId);
                     completedMetrics++;
@@ -791,7 +1102,7 @@
                     clearJobStorage();
                     return;
                 }
-                
+
                 if (hasCachedData) els.cacheIndicator.classList.remove('hidden'); else els.apiIndicator.classList.remove('hidden');
 
                 // Hand off to the shared analysis function
@@ -809,9 +1120,9 @@
             const price = parseFloat(els.priceInput.value) || 0;
             const divisor = (typeof JOURNEYS_PER_YEAR !== 'undefined') ? JOURNEYS_PER_YEAR : 464;
             const perJourney = price / divisor;
-            
+
             let counts = { cancel: 0, sev: 0, maj: 0, med: 0, min: 0 };
-            let maxRefunds = {}; 
+            let maxRefunds = {};
 
             services.forEach(s => {
                 let refund = 0;
@@ -820,10 +1131,10 @@
                     refund = perJourney * 0.5;
                 } else if (s.delay >= 120) {
                     counts.sev++;
-                    refund = perJourney * 2; 
+                    refund = perJourney * 2;
                 } else if (s.delay >= 60) {
                     counts.maj++;
-                    refund = perJourney * 1; 
+                    refund = perJourney * 1;
                 } else if (s.delay >= 30) {
                     counts.med++;
                     refund = perJourney * 0.5;
@@ -831,8 +1142,8 @@
                     counts.min++;
                     refund = perJourney * 0.25;
                 }
-                
-                const key = `${s.date}_${s.type}`; 
+
+                const key = `${s.date}_${s.type}`;
                 if (!maxRefunds[key] || refund > maxRefunds[key]) {
                     maxRefunds[key] = refund;
                 }
@@ -861,22 +1172,56 @@
             const price = parseFloat(els.priceInput.value) || 0;
             const divisor = (typeof JOURNEYS_PER_YEAR !== 'undefined') ? JOURNEYS_PER_YEAR : 464;
             const perJourney = price / divisor;
-            
+
+            // NEW: Define Delay Repay links for common TOCs
+            const tocLinks = {
+                'GW': 'https://www.gwr.com/help-and-support/refunds-and-compensation/delay-repay',
+                'SW': 'https://www.southwesternrailway.com/contact-and-help/refunds-and-compensation/delay-repay',
+                'VT': 'https://www.avantiwestcoast.co.uk/help-and-support/delay-repay',
+                'SE': 'https://www.southeasternrailway.co.uk/help-and-contact/refunds-and-compensation-claims/delay-repay',
+                'SN': 'https://www.southernrailway.com/help-and-support/delay-repay',
+                'TL': 'https://www.thameslinkrailway.com/help-and-support/delay-repay',
+                'GN': 'https://www.greatnorthernrail.com/help-and-support/delay-repay',
+                'KX': 'https://www.gatwickexpress.com/help-and-support/delay-repay',
+                'LM': 'https://www.londonnorthwesternrailway.co.uk/about-us/delay-repay',
+                'EM': 'https://www.eastmidlandsrailway.co.uk/help-manage/delay-repay',
+                'NE': 'https://www.lner.co.uk/support/delay-repay/',
+                'NT': 'https://www.northernrailway.co.uk/help/delay-repay',
+                'TP': 'https://www.tpexpress.co.uk/help/delay-repay-compensation',
+                'XC': 'https://www.crosscountrytrains.co.uk/customer-service/delay-repay',
+                'CC': 'https://www.c2c-online.co.uk/help-feedback/delay-repay/',
+                'CH': 'https://www.chilternrailways.co.uk/delayrepay15',
+                'GA': 'https://www.greateranglia.co.uk/about-us/our-performance/delay-repay',
+                'AW': 'https://tfw.wales/help-and-contact/rail/delay-repay',
+                'SR': 'https://www.scotrail.co.uk/plan-your-journey/refunds-and-compensation/delay-repay',
+                'GX': 'https://www.gatwickexpress.com/help-and-support/delay-repay'
+            };
+
             displayServices.forEach(s => {
                 const row = document.createElement('tr');
                 let statusClass = "text-slate-900 font-medium";
                 let statusText = s.delay > 0 ? `${s.delay}m` : "On Time";
                 let refundText = "£0.00";
-                if (s.isCancelled) { statusClass = "text-red-600 font-bold"; statusText = "Cancelled"; refundText = `£${(perJourney * 0.5).toFixed(2)}`; } 
-                else if (s.delay >= 15) {
+
+                // NEW: Determine claim eligibility
+                let isClaimable = false;
+                if (s.isCancelled) {
+                    statusClass = "text-red-600 font-bold";
+                    statusText = "Cancelled";
+                    refundText = `£${(perJourney * 0.5).toFixed(2)}`;
+                    isClaimable = true;
+                } else if (s.delay >= 15) {
                     statusClass = s.delay >= 30 ? "text-red-600 font-bold" : "text-orange-500 font-bold";
                     let mult = s.delay >= 120 ? 2 : s.delay >= 60 ? 1 : s.delay >= 30 ? 0.5 : 0.25;
                     refundText = `£${(perJourney * mult).toFixed(2)}`;
-                } else { statusClass = "text-emerald-600"; }
-                
+                    isClaimable = true;
+                } else {
+                    statusClass = "text-emerald-600";
+                }
+
                 const formattedSchDep = formatTime(s.schDep);
                 const formattedActArr = s.isCancelled ? 'Cancelled' : formatTime(s.actArr);
-                
+
                 let tocBadge = '';
                 if (s.toc) {
                     let tocClass = 'toc-default';
@@ -884,6 +1229,20 @@
                     else if (s.toc === 'SW') tocClass = 'toc-sw';
                     else if (s.toc === 'VT') tocClass = 'toc-vt';
                     tocBadge = `<span class="toc-badge ${tocClass} ml-2">${s.toc}</span>`;
+                }
+
+                // NEW: Generate Claim Button Logic
+                let claimHtml = '<span class="text-slate-300">-</span>';
+                if (isClaimable) {
+                    let url = tocLinks[s.toc];
+                    // If no direct link found, fallback to smart google search
+                    if (!url) {
+                        url = `https://www.google.com/search?q=${s.toc}+delay+repay`;
+                    }
+                    claimHtml = `<a href="${url}" target="_blank" class="inline-flex items-center px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full hover:bg-emerald-200 transition-colors">
+                                    Claim
+                                    <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                 </a>`;
                 }
 
                 row.innerHTML = `
@@ -894,19 +1253,20 @@
                     <td class="py-4 px-6 whitespace-nowrap text-sm font-medium ${s.isCancelled ? 'text-red-600' : 'text-slate-700'}" data-label="Act. Arr">${formattedActArr}</td>
                     <td class="py-4 px-6 whitespace-nowrap text-sm ${statusClass}" data-label="Delay">${statusText}</td>
                     <td class="py-4 px-6 whitespace-nowrap text-sm font-bold text-emerald-600" data-label="Refund">${refundText}</td>
+                    <td class="py-4 px-6 whitespace-nowrap text-sm" data-label="Claim">${claimHtml}</td>
                 `;
                 els.tableBody.appendChild(row);
             });
         }
-        
+
         function getMonday(d) { d = new Date(d); let day = d.getDay(), diff = d.getDate() - day + (day == 0 ? -6 : 1); return new Date(d.setDate(diff)); }
         function parseApiTime(timeStr) { if (!timeStr || timeStr.length !== 4) return null; const h = parseInt(timeStr.substring(0, 2), 10), m = parseInt(timeStr.substring(2, 4), 10); return new Date(1970, 0, 1, h, m, 0); }
         function setupAutocomplete(input, results, codeInput, isOutbound) {
-            input.addEventListener('input', function() {
+            input.addEventListener('input', function () {
                 const val = this.value.toLowerCase();
                 results.innerHTML = '';
                 if (val.length < 2) { results.classList.add('hidden'); return; }
-                const matches = stationData.filter(s => s.name.toLowerCase().includes(val) || s.code.toLowerCase().includes(val)).slice(0,5);
+                const matches = stationData.filter(s => s.name.toLowerCase().includes(val) || s.code.toLowerCase().includes(val)).slice(0, 5);
                 if (matches.length > 0) {
                     results.classList.remove('hidden');
                     matches.forEach(s => {
@@ -919,20 +1279,21 @@
             document.addEventListener('click', (e) => { if (!input.contains(e.target) && !results.contains(e.target)) results.classList.add('hidden'); });
         }
         function setLoading(bool, msg) {
-             els.btn.disabled = bool;
-            if (bool) { els.btnText.textContent = msg || "Analysing..."; els.btnSpinner.classList.remove('hidden'); els.btn.classList.add('opacity-75', 'cursor-wait'); } 
+            els.btn.disabled = bool;
+            if (bool) { els.btnText.textContent = msg || "Analysing..."; els.btnSpinner.classList.remove('hidden'); els.btn.classList.add('opacity-75', 'cursor-wait'); }
             else { els.btnText.textContent = "Check Performance"; els.btnSpinner.classList.add('hidden'); els.btn.classList.remove('opacity-75', 'cursor-wait'); }
         }
         function showStatus(msg, type) {
-             els.status.textContent = msg;
-             els.status.className = `text-center text-sm font-medium mt-2 transition-all ${type === 'error' ? 'text-red-500' : 'text-slate-500'}`;
+            els.status.textContent = msg;
+            els.status.className = `text-center text-sm font-medium mt-2 transition-all ${type === 'error' ? 'text-red-500' : 'text-slate-500'}`;
         }
         function formatDateForAPI(d) { return d.toISOString().split('T')[0]; }
         function formatDateForDisplay(d) { return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }); }
-        function formatTime(t) { if (!t || t.length !== 4) return '--:--'; return `${t.substr(0,2)}:${t.substr(2,2)}`; }
+        function formatTime(t) { if (!t || t.length !== 4) return '--:--'; return `${t.substr(0, 2)}:${t.substr(2, 2)}`; }
         function updateWeekLabel() { const d = new Date(els.datePicker.value); if (isNaN(d)) return; const day = d.getDay(); const diff = d.getDate() - day + (day == 0 ? -6 : 1); const monday = new Date(d.setDate(diff)); els.wcLabel.textContent = `Week Commencing: ${formatDateForDisplay(monday)}`; }
 
         init();
     </script>
 </body>
+
 </html>
