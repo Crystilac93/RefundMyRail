@@ -190,7 +190,8 @@ app.get('/api/job/:id', async (req, res) => {
 // --- SUBSCRIPTION ENDPOINTS (Uses redisDb - persistent) ---
 
 app.post('/api/subscribe', async (req, res) => {
-    const { email, fromCode, toCode, morningTime, eveningTime } = req.body;
+    // FIX: Updated to accept 'morningStart', 'morningEnd' etc instead of 'morningTime'
+    const { email, fromCode, toCode, morningStart, morningEnd, eveningStart, eveningEnd } = req.body;
 
     if (!email || !fromCode || !toCode) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -202,7 +203,11 @@ app.post('/api/subscribe', async (req, res) => {
             id: subId,
             email,
             route: { from: fromCode, to: toCode },
-            times: { am: morningTime, pm: eveningTime },
+            // FIX: Storing structured ranges
+            times: { 
+                morning: { start: morningStart, end: morningEnd }, 
+                evening: { start: eveningStart, end: eveningEnd } 
+            },
             createdAt: new Date().toISOString(),
             active: true
         };
