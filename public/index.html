@@ -1,20 +1,33 @@
 <!DOCTYPE html>
 <html lang="en-GB">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RefundMyRail - Automated Delay Repay</title>
-    <meta name="description" content="Don't let train delays cost you. Automated tracking and compensation calculation for UK commuters.">
+    <meta name="description"
+        content="Don't let train delays cost you. Automated tracking and compensation calculation for UK commuters.">
     <link rel="icon" type="image/png" href="train_icon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .blob { position: absolute; filter: blur(40px); z-index: -1; opacity: 0.5; }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .blob {
+            position: absolute;
+            filter: blur(40px);
+            z-index: -1;
+            opacity: 0.5;
+        }
+
         /* Autocomplete Styles */
         .autocomplete-results {
             position: absolute;
-            top: 100%; left: 0; right: 0;
+            top: 100%;
+            left: 0;
+            right: 0;
             z-index: 50;
             background-color: white;
             border: 1px solid #e2e8f0;
@@ -25,17 +38,39 @@
             color: #1e293b;
             text-align: left;
         }
-        .autocomplete-item { padding: 0.5rem 1rem; cursor: pointer; }
-        .autocomplete-item:hover { background-color: #ecfdf5; color: #059669; }
-        .autocomplete-item strong { font-weight: 600; }
-        
-        .fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+
+        .autocomplete-item {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+        }
+
+        .autocomplete-item:hover {
+            background-color: #ecfdf5;
+            color: #059669;
+        }
+
+        .autocomplete-item strong {
+            font-weight: 600;
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
+
 <body class="bg-slate-50 text-slate-900 overflow-x-hidden flex flex-col min-h-screen">
 
     <!-- Navigation -->
@@ -46,48 +81,58 @@
                 <img src="train_icon.png" alt="Logo" class="h-9 w-9">
                 <span class="font-extrabold text-xl sm:text-2xl tracking-tight text-slate-900">RefundMyRail</span>
             </a>
-            
+
             <!-- Nav Links -->
             <div class="flex items-center gap-4 sm:gap-8">
-                <a href="/app" class="text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors">Dashboard</a>
-                <a href="/manage" class="hidden sm:block text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors">Alerts</a>
-                <a href="/app" class="inline-flex items-center justify-center px-5 py-2.5 text-sm font-bold rounded-xl text-white bg-slate-900 hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 transform hover:-translate-y-0.5">
-                    Sign In
-                </a>
+                <a href="/app"
+                    class="text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors">Dashboard</a>
+                <a href="/manage"
+                    class="hidden sm:block text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors">Alerts</a>
             </div>
         </div>
     </nav>
-
-    <!-- Hero Section -->
     <main class="flex-grow relative pt-32 pb-20 sm:pt-40 sm:pb-24 px-6">
         <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
-            
+
             <!-- Hero Text -->
             <div class="text-center lg:text-left fade-in-up">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-6">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-6">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     Live Delay Tracking
                 </div>
-                <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 mb-6 leading-[1.1]">
+                <h1
+                    class="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 mb-6 leading-[1.1]">
                     Delays happen. <br />
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">Don't pay for them.</span>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">Don't pay
+                        for them.</span>
                 </h1>
                 <p class="text-lg sm:text-xl text-slate-600 mb-8 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                    The average UK commuter loses <strong>£140/year</strong> in unclaimed compensation. 
+                    The average UK commuter loses <strong>£140/year</strong> in unclaimed compensation.
                     We automatically track your journey and calculate exactly what you're owed.
                 </p>
-                
-                <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start text-sm font-bold text-slate-500">
+
+                <div
+                    class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start text-sm font-bold text-slate-500">
                     <div class="flex items-center gap-2">
-                        <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
                         Automated Claims
                     </div>
                     <div class="flex items-center gap-2">
-                        <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
                         Daily Alerts
                     </div>
                     <div class="flex items-center gap-2">
-                        <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
                         National Rail Data
                     </div>
                 </div>
@@ -95,29 +140,39 @@
 
             <!-- Interactive Estimator Card -->
             <div class="relative fade-in-up" style="animation-delay: 0.2s;">
-                <div class="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-3xl blur opacity-30 animate-pulse"></div>
+                <div
+                    class="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-3xl blur opacity-30 animate-pulse">
+                </div>
                 <div class="relative bg-white rounded-3xl shadow-2xl border border-slate-100 p-6 sm:p-8">
                     <div class="mb-6">
                         <h3 class="text-xl font-bold text-slate-900">Refund Estimator</h3>
-                        <p class="text-slate-500 text-sm">Calculate your potential annual refund based on national route averages.</p>
+                        <p class="text-slate-500 text-sm">Calculate your potential annual refund based on national route
+                            averages.</p>
                     </div>
 
                     <form id="estimator-form" class="space-y-4">
                         <div class="relative">
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Home Station</label>
-                            <input type="text" id="est-from" placeholder="e.g. Brighton" class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-bold text-slate-900" required autocomplete="off">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Home
+                                Station</label>
+                            <input type="text" id="est-from" placeholder="e.g. Brighton"
+                                class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-bold text-slate-900"
+                                required autocomplete="off">
                             <input type="hidden" id="est-from-code">
                             <div id="results-est-from" class="autocomplete-results hidden"></div>
                         </div>
 
                         <div class="relative">
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Work Station</label>
-                            <input type="text" id="est-to" placeholder="e.g. London Victoria" class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-bold text-slate-900" required autocomplete="off">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Work
+                                Station</label>
+                            <input type="text" id="est-to" placeholder="e.g. London Victoria"
+                                class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-bold text-slate-900"
+                                required autocomplete="off">
                             <input type="hidden" id="est-to-code">
                             <div id="results-est-to" class="autocomplete-results hidden"></div>
                         </div>
 
-                        <button type="submit" id="est-btn" class="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-lg shadow-slate-200 transition-all transform active:scale-[0.98] flex items-center justify-center">
+                        <button type="submit" id="est-btn"
+                            class="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-lg shadow-slate-200 transition-all transform active:scale-[0.98] flex items-center justify-center">
                             <span>Estimate Refund</span>
                         </button>
                     </form>
@@ -125,10 +180,13 @@
                     <!-- Result State -->
                     <div id="est-result" class="hidden mt-6 pt-6 border-t border-slate-100 text-center">
                         <div id="est-content">
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Potential Annual Claim</p>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Potential Annual
+                                Claim</p>
                             <div class="text-5xl font-extrabold text-emerald-600 mb-2" id="est-amount">£0.00</div>
-                            <p class="text-sm text-slate-600 mb-4 max-w-xs mx-auto">Based on <span id="est-miles" class="font-bold text-slate-800">0</span> mile route & standard UK performance metrics.</p>
-                            
+                            <p class="text-sm text-slate-600 mb-4 max-w-xs mx-auto">Based on <span id="est-miles"
+                                    class="font-bold text-slate-800">0</span> mile route & standard UK performance
+                                metrics.</p>
+
                             <div class="grid grid-cols-2 gap-2 mb-6 text-xs font-medium text-slate-500">
                                 <div class="bg-slate-50 rounded-lg p-2 border border-slate-100">
                                     <span class="block text-slate-900 font-bold text-lg" id="est-delays">0</span>
@@ -140,7 +198,8 @@
                                 </div>
                             </div>
 
-                            <a href="/app" class="block w-full py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-500 shadow-lg shadow-emerald-200 transition-all">
+                            <a href="/app"
+                                class="block w-full py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-500 shadow-lg shadow-emerald-200 transition-all">
                                 Start Tracking For Real &rarr;
                             </a>
                         </div>
@@ -157,27 +216,33 @@
                 <h2 class="text-3xl font-extrabold text-slate-900 sm:text-4xl">How RefundMyRail Works</h2>
                 <p class="mt-4 text-lg text-slate-500">We do the boring admin so you get the money you're owed.</p>
             </div>
-            
+
             <div class="grid md:grid-cols-3 gap-12">
                 <!-- Step 1 -->
-                <div class="relative pl-4 border-l-4 border-emerald-100 hover:border-emerald-500 transition-colors duration-300">
+                <div
+                    class="relative pl-4 border-l-4 border-emerald-100 hover:border-emerald-500 transition-colors duration-300">
                     <div class="text-emerald-600 font-bold text-lg mb-2">01. Set Your Route</div>
                     <h3 class="text-xl font-bold text-slate-900 mb-3">Tell us your commute</h3>
-                    <p class="text-slate-500">Enter your home and work stations and your usual travel times. We handle returns and flexible hours.</p>
+                    <p class="text-slate-500">Enter your home and work stations and your usual travel times. We handle
+                        returns and flexible hours.</p>
                 </div>
-                
+
                 <!-- Step 2 -->
-                <div class="relative pl-4 border-l-4 border-emerald-100 hover:border-emerald-500 transition-colors duration-300">
+                <div
+                    class="relative pl-4 border-l-4 border-emerald-100 hover:border-emerald-500 transition-colors duration-300">
                     <div class="text-emerald-600 font-bold text-lg mb-2">02. We Monitor</div>
                     <h3 class="text-xl font-bold text-slate-900 mb-3">Real-time Tracking</h3>
-                    <p class="text-slate-500">Our system checks every train against the official timetable data. We spot cancellations and delays instantly.</p>
+                    <p class="text-slate-500">Our system checks every train against the official timetable data. We spot
+                        cancellations and delays instantly.</p>
                 </div>
-                
+
                 <!-- Step 3 -->
-                <div class="relative pl-4 border-l-4 border-emerald-100 hover:border-emerald-500 transition-colors duration-300">
+                <div
+                    class="relative pl-4 border-l-4 border-emerald-100 hover:border-emerald-500 transition-colors duration-300">
                     <div class="text-emerald-600 font-bold text-lg mb-2">03. Get Paid</div>
                     <h3 class="text-xl font-bold text-slate-900 mb-3">Instant Alerts</h3>
-                    <p class="text-slate-500">When you are owed a refund, we email you the exact details you need to file a claim in seconds.</p>
+                    <p class="text-slate-500">When you are owed a refund, we email you the exact details you need to
+                        file a claim in seconds.</p>
                 </div>
             </div>
         </div>
@@ -192,26 +257,35 @@
                     <p class="text-slate-300 mb-8 max-w-lg mx-auto text-lg">
                         Set your route once. We'll email you automatically when you are owed compensation.
                     </p>
-                    
+
                     <form id="subscription-form" class="max-w-md mx-auto space-y-6 text-left">
-                        
+
                         <!-- Email -->
                         <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Email Address</label>
-                            <input type="email" name="email" placeholder="name@example.com" class="w-full px-4 py-3 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium" required>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Email
+                                Address</label>
+                            <input type="email" name="email" placeholder="name@example.com"
+                                class="w-full px-4 py-3 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
+                                required>
                         </div>
 
                         <!-- Route Row -->
                         <div class="grid grid-cols-2 gap-4">
                             <div class="relative">
-                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">From</label>
-                                <input type="text" id="sub-from" placeholder="Station..." class="w-full px-4 py-3 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium" required autocomplete="off">
+                                <label
+                                    class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">From</label>
+                                <input type="text" id="sub-from" placeholder="Station..."
+                                    class="w-full px-4 py-3 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
+                                    required autocomplete="off">
                                 <input type="hidden" name="fromCode" id="sub-from-code">
                                 <div id="results-sub-from" class="autocomplete-results hidden"></div>
                             </div>
                             <div class="relative">
-                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">To</label>
-                                <input type="text" id="sub-to" placeholder="Station..." class="w-full px-4 py-3 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium" required autocomplete="off">
+                                <label
+                                    class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">To</label>
+                                <input type="text" id="sub-to" placeholder="Station..."
+                                    class="w-full px-4 py-3 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
+                                    required autocomplete="off">
                                 <input type="hidden" name="toCode" id="sub-to-code">
                                 <div id="results-sub-to" class="autocomplete-results hidden"></div>
                             </div>
@@ -219,42 +293,53 @@
 
                         <!-- Time Ranges Row -->
                         <div class="space-y-4">
-                             <div class="grid grid-cols-2 gap-4">
-                                 <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Morning Commute</label></div>
-                                 <div>
-                                    <input type="time" name="morningStart" value="07:00" class="w-full px-4 py-3 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-sm">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="col-span-2"><label
+                                        class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Morning
+                                        Commute</label></div>
+                                <div>
+                                    <input type="time" name="morningStart" value="07:00"
+                                        class="w-full px-4 py-3 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-sm">
                                     <span class="text-[10px] text-slate-400 ml-1">Depart After</span>
-                                 </div>
-                                 <div>
-                                    <input type="time" name="morningEnd" value="08:00" class="w-full px-4 py-3 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-sm">
+                                </div>
+                                <div>
+                                    <input type="time" name="morningEnd" value="08:00"
+                                        class="w-full px-4 py-3 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-sm">
                                     <span class="text-[10px] text-slate-400 ml-1">Depart Before</span>
-                                 </div>
-                             </div>
-                             
-                             <div class="grid grid-cols-2 gap-4">
-                                 <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Evening Commute</label></div>
-                                 <div>
-                                    <input type="time" name="eveningStart" value="17:00" class="w-full px-4 py-3 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-sm">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="col-span-2"><label
+                                        class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Evening
+                                        Commute</label></div>
+                                <div>
+                                    <input type="time" name="eveningStart" value="17:00"
+                                        class="w-full px-4 py-3 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-sm">
                                     <span class="text-[10px] text-slate-400 ml-1">Depart After</span>
-                                 </div>
-                                 <div>
-                                    <input type="time" name="eveningEnd" value="18:00" class="w-full px-4 py-3 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-sm">
+                                </div>
+                                <div>
+                                    <input type="time" name="eveningEnd" value="18:00"
+                                        class="w-full px-4 py-3 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-sm">
                                     <span class="text-[10px] text-slate-400 ml-1">Depart Before</span>
-                                 </div>
-                             </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <button type="submit" id="sub-btn" class="w-full px-8 py-4 bg-emerald-600 hover:bg-emerald-500 font-bold rounded-xl transition-all shadow-lg shadow-emerald-900/20 mt-6">
+                        <button type="submit" id="sub-btn"
+                            class="w-full px-8 py-4 bg-emerald-600 hover:bg-emerald-500 font-bold rounded-xl transition-all shadow-lg shadow-emerald-900/20 mt-6">
                             Subscribe for Free
                         </button>
                         <p id="sub-status" class="text-center text-sm mt-2 font-medium"></p>
                     </form>
-                    
+
                     <p class="text-xs text-slate-500 mt-6">We value your privacy. Unsubscribe at any time.</p>
                 </div>
-                
+
                 <!-- Decor -->
-                <div class="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+                <div
+                    class="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay">
+                </div>
                 <div class="absolute -top-24 -left-24 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl"></div>
                 <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"></div>
             </div>
@@ -271,7 +356,8 @@
             <div class="text-slate-400 text-sm text-center md:text-right space-y-1">
                 <p>&copy; 2025 RefundMyRail.</p>
                 <p>Contains National Rail data © 2025. Source: Rail Delivery Group.</p>
-                <p class="text-xs opacity-75">RefundMyRail is an independent tool and is not affiliated with National Rail.</p>
+                <p class="text-xs opacity-75">RefundMyRail is an independent tool and is not affiliated with National
+                    Rail.</p>
             </div>
         </div>
     </footer>
@@ -285,14 +371,14 @@
 
         // --- Autocomplete Logic ---
         function setupAutocomplete(input, results, codeInput) {
-            input.addEventListener('input', function() {
+            input.addEventListener('input', function () {
                 const val = this.value.toLowerCase();
                 results.innerHTML = '';
                 if (val.length < 2) { results.classList.add('hidden'); return; }
-                
+
                 // Filter from global stationData
-                const matches = stationData.filter(s => s.name.toLowerCase().includes(val) || s.code.toLowerCase().includes(val)).slice(0,5);
-                
+                const matches = stationData.filter(s => s.name.toLowerCase().includes(val) || s.code.toLowerCase().includes(val)).slice(0, 5);
+
                 if (matches.length > 0) {
                     results.classList.remove('hidden');
                     matches.forEach(s => {
@@ -308,16 +394,16 @@
                     });
                 } else { results.classList.add('hidden'); }
             });
-            
+
             // Close on click outside
-            document.addEventListener('click', (e) => { 
-                if (!input.contains(e.target) && !results.contains(e.target)) results.classList.add('hidden'); 
+            document.addEventListener('click', (e) => {
+                if (!input.contains(e.target) && !results.contains(e.target)) results.classList.add('hidden');
             });
         }
 
         // --- Load Rich Data for Distance Calc ---
         let fullStationList = [];
-        
+
         // Fallback geometry for demo purposes if fetch fails (e.g. in preview blob)
         const FALLBACK_GEOMETRY = [
             { crsCode: 'BTN', lat: 50.829659, long: -0.141234 }, // Brighton
@@ -341,7 +427,7 @@
                 const res = await fetch('stations.json');
                 if (!res.ok) throw new Error("File not found");
                 fullStationList = await res.json();
-            } catch(e) {
+            } catch (e) {
                 console.warn("Station geometry fetch failed (likely preview environment). Using fallback data.");
                 fullStationList = [];
             } finally {
@@ -362,20 +448,20 @@
                 setTimeout(initForms, 100);
             }
         }
-        
+
         loadRichStationData();
 
         // --- Calculation Logic (No API) ---
-        
+
         // Haversine Formula for Distance (Miles)
         function getDistance(lat1, lon1, lat2, lon2) {
             const R = 3958.8; // Radius of Earth in miles
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             return R * c;
         }
 
@@ -390,21 +476,21 @@
         // Statistical Estimator
         document.getElementById('estimator-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            
+
             const fromCode = document.getElementById('est-from-code').value;
             const toCode = document.getElementById('est-to-code').value;
 
-            if(!fromCode || !toCode) return;
+            if (!fromCode || !toCode) return;
 
             const fromLoc = getCoords(fromCode);
             const toLoc = getCoords(toCode);
-            
+
             // Fallback if coords missing (unlikely with full list)
-            if(!fromLoc || !toLoc) {
-                 document.getElementById('est-amount').textContent = "£120.00+"; 
-                 document.getElementById('est-detail').textContent = "Estimated based on average commuter routes.";
-                 document.getElementById('est-result').classList.remove('hidden');
-                 return;
+            if (!fromLoc || !toLoc) {
+                document.getElementById('est-amount').textContent = "£120.00+";
+                document.getElementById('est-detail').textContent = "Estimated based on average commuter routes.";
+                document.getElementById('est-result').classList.remove('hidden');
+                return;
             }
 
             const distance = getDistance(fromLoc.lat, fromLoc.long, toLoc.lat, toLoc.long);
@@ -415,26 +501,26 @@
             const pricePerJourney = estTicketPrice / 460;
 
             let failRate = 0.02;
-            if(distance > 60) failRate = 0.06;
-            else if(distance > 20) failRate = 0.04;
+            if (distance > 60) failRate = 0.06;
+            else if (distance > 20) failRate = 0.04;
 
             const annualFailures = Math.round(460 * failRate);
             const majorIncidents = Math.ceil(annualFailures * 0.2);
             const delayIncidents = annualFailures - majorIncidents;
 
             const totalRefund = (majorIncidents * (pricePerJourney * 0.5)) + (delayIncidents * (pricePerJourney * 0.25));
-            
+
             // Display
             document.getElementById('est-amount').textContent = `£${totalRefund.toFixed(2)}`;
             document.getElementById('est-miles').textContent = roundedDist;
             document.getElementById('est-delays').textContent = delayIncidents;
             document.getElementById('est-cancels').textContent = majorIncidents;
-            
+
             document.getElementById('est-result').classList.remove('hidden');
-            
+
             // Scroll to result
             setTimeout(() => {
-                document.getElementById('est-result').scrollIntoView({behavior: 'smooth', block: 'nearest'});
+                document.getElementById('est-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }, 100);
         });
 
@@ -454,7 +540,7 @@
                 eveningEnd: formData.get('eveningEnd')
             };
 
-            if(!payload.fromCode || !payload.toCode) {
+            if (!payload.fromCode || !payload.toCode) {
                 status.textContent = "Please select valid stations from the list.";
                 status.className = "text-center text-sm mt-2 font-bold text-red-400";
                 return;
@@ -487,4 +573,5 @@
 
     </script>
 </body>
+
 </html>
