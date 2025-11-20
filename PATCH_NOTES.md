@@ -1,20 +1,42 @@
 Patch Notes
 
-v1.6.2 - Dashboard & Splash UX Refinements
+v1.6.3 - Refund Logic & Visual Clarity
 
 Status: Ready for Deployment
 
+🎨 Dashboard Visuals
+
+High-Impact Status Cards: Replaced the outlined KPI widgets with bold, solid-color cards to improve readability and visual hierarchy.
+
+Cancelled: Solid Red background.
+
+Severe (120+): Solid Darker Red background.
+
+Major (60+): Solid Orange background.
+
+Medium (30+): Solid Amber background.
+
+Minor (15+): Solid Yellow background.
+
+🧮 Logic Updates
+
+Refund Calculation Refinement: Updated the estimated refund logic (calculateKPIs) to reflect a "Best Case Claim" scenario.
+
+Per-Leg Maximum: Instead of summing refunds for every delayed train found, the system now groups results by journey leg (Date + Direction).
+
+Summation: It identifies the single highest refund amount for each leg and sums these maximums to provide a more realistic total estimated claim for the period.
+
+v1.6.2 - Dashboard & Splash UX Refinements
+
+Status: Implemented
+
 🎨 Visual & UX Enhancements
 
-Station Defaults Removed: The premium dashboard (DelayRepayChecker.html) no longer pre-fills "Didcot Parkway" and "London Paddington". Input fields now start empty with placeholders to encourage personalized entry.
+Station Defaults Removed: Inputs start empty with placeholders.
 
-Splash Page Consistency: Updated the "Get Free Alerts" form on the Splash Page (index.html) to use Time Ranges (Depart After / Depart Before) for both morning and evening commutes, matching the logic and precision of the main dashboard.
+Splash Page Consistency: Updated "Get Free Alerts" to use Time Ranges.
 
-TOC Badges: Added visual indicators for Train Operating Companies (TOCs) in the results table.
-
-Dynamic Badging: Automatically detects the TOC code from the API response (e.g., GW, SW, VT).
-
-Color Coding: Displays distinct colored badges for major operators (Dark Green for GWR, Blue for SWR, Red for Avanti/Virgin, Slate for others) to help users quickly identify their service.
+TOC Badges: Added visual indicators for Train Operating Companies (e.g., GWR, SWR).
 
 v1.6.1 - Subscription Data Capture
 
