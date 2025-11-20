@@ -31,11 +31,23 @@
 
         .progress-container { width: 100%; background-color: #e5e7eb; border-radius: 9999px; height: 0.5rem; overflow: hidden; margin-top: 0.75rem; }
         .progress-bar { height: 100%; background-color: #10b981; width: 0%; transition: width 0.3s ease-out; }
+
         .text-danger { color: #ef4444; font-weight: 600; }
         .text-success { color: #22c55e; font-weight: 600; }
         
-        input[type="time"], input[type="date"], select { -webkit-appearance: none; appearance: none; background-color: #fff; border: 1px solid #d1d5db; border-radius: 0.5rem; padding: 0.6rem 0.875rem; font-size: 1rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+        /* FIXED: Added input[type="text"] here to ensure Home/Work Station boxes get the same grey border/shadow as Time inputs */
+        input[type="time"], input[type="date"], input[type="text"], select { 
+            -webkit-appearance: none; appearance: none; 
+            background-color: #fff; 
+            border: 1px solid #d1d5db; /* The specific grey border you noticed */
+            border-radius: 0.5rem; 
+            padding: 0.6rem 0.875rem; 
+            font-size: 1rem; 
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); 
+        }
+        
         input:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2); }
+
         #settings-panel { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .toggle-checkbox:checked { right: 0; border-color: #10b981; }
         .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
@@ -125,26 +137,24 @@
 
             <form id="search-form" class="p-6 sm:p-8 space-y-8">
 
-                <!-- Station Selection (Moved from Settings) -->
+                <!-- Station Selection -->
                 <div class="space-y-5">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div class="autocomplete-container relative">
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Home Station</label>
-                            <!-- FIXED: Removed hardcoded placeholder and value -->
-                            <input type="text" id="setting-outbound-from" class="w-full rounded-xl border-slate-200 py-3 text-sm font-semibold text-slate-700 focus:ring-emerald-500 focus:border-emerald-500" placeholder="e.g. Manchester Piccadilly" value="">
+                            <input type="text" id="setting-outbound-from" class="w-full rounded-xl border-slate-200 py-3 text-sm font-semibold text-slate-700 focus:ring-emerald-500 focus:border-emerald-500" placeholder="Station..." value="">
                             <div class="autocomplete-results hidden absolute w-full bg-white border border-slate-200 rounded-b-xl shadow-xl z-50" id="results-setting-outbound-from"></div>
                             <input type="hidden" id="setting-outbound-from-code" value=""> 
                         </div>
                         <div class="autocomplete-container relative">
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Work Station</label>
-                            <!-- FIXED: Removed hardcoded placeholder and value -->
-                            <input type="text" id="setting-outbound-to" class="w-full rounded-xl border-slate-200 py-3 text-sm font-semibold text-slate-700 focus:ring-emerald-500 focus:border-emerald-500" placeholder="e.g. London Euston" value="">
+                            <input type="text" id="setting-outbound-to" class="w-full rounded-xl border-slate-200 py-3 text-sm font-semibold text-slate-700 focus:ring-emerald-500 focus:border-emerald-500" placeholder="Station..." value="">
                             <div class="autocomplete-results hidden absolute w-full bg-white border border-slate-200 rounded-b-xl shadow-xl z-50" id="results-setting-outbound-to"></div>
                             <input type="hidden" id="setting-outbound-to-code" value="">
                         </div>
                     </div>
                     
-                    <!-- Hidden fields for return journey (auto-sync handled by JS) -->
+                    <!-- Hidden fields for return journey -->
                     <input type="hidden" id="setting-inbound-from" value="">
                     <input type="hidden" id="setting-inbound-from-code" value="">
                     <input type="hidden" id="setting-inbound-to" value="">
@@ -163,7 +173,7 @@
                                 <span class="block py-2.5 text-sm font-bold text-slate-500 rounded-lg peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm transition-all">Week View</span>
                             </label>
                             <label class="flex-1 text-center cursor-pointer">
-                                <input type="radio" name="search-type" value="day" class="sr-only peer" checked> <!-- Defaulted to Day -->
+                                <input type="radio" name="search-type" value="day" class="sr-only peer" checked>
                                 <span class="block py-2.5 text-sm font-bold text-slate-500 rounded-lg peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm transition-all">Single Day</span>
                             </label>
                         </div>
@@ -174,13 +184,11 @@
                         <div class="relative">
                             <input type="date" id="date-picker" class="block w-full px-4 py-3 rounded-xl border-slate-200 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-slate-800 font-semibold bg-slate-50 hover:bg-white transition-colors">
                         </div>
-                        <!-- Week Commencing label starts hidden in Day mode -->
                         <p id="week-commencing-label" class="text-xs text-emerald-600 mt-2 font-semibold pl-1" style="visibility: hidden;">w/c ...</p>
                     </div>
                 </div>
 
-                <!-- Days in Office -->
-                <!-- Hidden initially because default mode is Day -->
+                <!-- Days in Office (Hidden for single day mode default) -->
                 <div id="days-in-office-group" style="display: none;">
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Days Travelled</label>
                     <div class="flex justify-between gap-2 sm:gap-4">
@@ -810,7 +818,7 @@
                 const formattedSchDep = formatTime(s.schDep);
                 const formattedActArr = s.isCancelled ? 'Cancelled' : formatTime(s.actArr);
                 
-                // NEW: TOC Badge logic
+                // TOC Badge logic
                 let tocBadge = '';
                 if (s.toc) {
                     let tocClass = 'toc-default';
@@ -822,8 +830,7 @@
 
                 row.innerHTML = `
                     <td class="py-4 px-6 whitespace-nowrap text-sm text-slate-700" data-label="Date">${formatDateForDisplay(new Date(s.date))}</td>
-                    <td class="py-4 px-6 whitespace-nowrap text-sm text-slate-500 flex items-center" data-label="Type">${s.type}</td>
-                    <td class="py-4 px-6 whitespace-nowrap text-sm text-slate-500" data-label="TOC">${tocBadge}</td>
+                    <td class="py-4 px-6 whitespace-nowrap text-sm text-slate-500 flex items-center" data-label="Type">${s.type} ${tocBadge}</td>
                     <td class="py-4 px-6 whitespace-nowrap text-sm text-slate-700 font-medium" data-label="Sch. Dep">${formattedSchDep}</td>
                     <td class="py-4 px-6 whitespace-nowrap text-sm font-medium ${s.isCancelled ? 'text-red-600' : 'text-slate-700'}" data-label="Act. Arr">${formattedActArr}</td>
                     <td class="py-4 px-6 whitespace-nowrap text-sm ${statusClass}" data-label="Delay">${statusText}</td>
