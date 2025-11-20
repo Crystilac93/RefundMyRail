@@ -23,6 +23,7 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 
+        /* Mobile Card View for Tables */
         @media (max-width: 768px) {
             .mobile-table-card thead { display: none; }
             .mobile-table-card tbody tr { display: flex; flex-direction: column; background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; margin-bottom: 1rem; padding: 1rem; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
@@ -31,24 +32,31 @@
             .mobile-table-card td:last-child { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #f3f4f6; font-weight: 700; font-size: 1.1rem; }
         }
 
+        /* Progress Bar Styles */
         .progress-container { width: 100%; background-color: #e5e7eb; border-radius: 9999px; height: 0.5rem; overflow: hidden; margin-top: 0.75rem; }
         .progress-bar { height: 100%; background-color: #10b981; width: 0%; transition: width 0.3s ease-out; }
+
         .text-danger { color: #ef4444; font-weight: 600; }
         .text-success { color: #22c55e; font-weight: 600; }
         
         input[type="time"], input[type="date"], select { -webkit-appearance: none; appearance: none; background-color: #fff; border: 1px solid #d1d5db; border-radius: 0.5rem; padding: 0.6rem 0.875rem; font-size: 1rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
         input:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2); }
+
         #settings-panel { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .toggle-checkbox:checked { right: 0; border-color: #10b981; }
         .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
         .kpi-card { transition: transform 0.2s; }
         .kpi-card:active { transform: scale(0.98); }
+
         .kpi-scroller { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1rem; }
         @media (max-width: 640px) {
             .kpi-scroller { display: flex; overflow-x: auto; padding-bottom: 1rem; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; margin-right: -1rem; padding-right: 1rem; }
             .kpi-scroller > * { flex: 0 0 140px; scroll-snap-align: start; }
         }
+        
         .autocomplete-results { max-height: 200px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+        /* Cache/Live Badges */
         .cache-badge { display: inline-flex; align-items: center; background-color: #dbeafe; color: #1e40af; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; border: 1px solid #bfdbfe; }
         .api-badge { display: inline-flex; align-items: center; background-color: #dcfce7; color: #166534; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; border: 1px solid #bbf7d0; }
         
@@ -122,14 +130,14 @@
                      <div class="autocomplete-container relative">
                         <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Home Station</label>
                         <!-- REMOVED DEFAULT VALUES -->
-                        <input type="text" id="setting-outbound-from" class="w-full rounded-xl border-slate-200 py-3 text-sm font-medium focus:ring-emerald-500 focus:border-emerald-500" placeholder="Start Station (Station...)">
+                        <input type="text" id="setting-outbound-from" class="w-full rounded-xl border-slate-200 py-3 text-sm font-medium focus:ring-emerald-500 focus:border-emerald-500" placeholder="Start Station (e.g. Didcot Parkway)">
                         <div class="autocomplete-results hidden absolute w-full bg-white border border-slate-200 rounded-b-xl shadow-xl z-50" id="results-setting-outbound-from"></div>
                         <input type="hidden" id="setting-outbound-from-code" value=""> 
                     </div>
                      <div class="autocomplete-container relative">
                         <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Work Station</label>
                         <!-- REMOVED DEFAULT VALUES -->
-                        <input type="text" id="setting-outbound-to" class="w-full rounded-xl border-slate-200 py-3 text-sm font-medium focus:ring-emerald-500 focus:border-emerald-500" placeholder="End Station (Station...)">
+                        <input type="text" id="setting-outbound-to" class="w-full rounded-xl border-slate-200 py-3 text-sm font-medium focus:ring-emerald-500 focus:border-emerald-500" placeholder="End Station (e.g. London Paddington)">
                         <div class="autocomplete-results hidden absolute w-full bg-white border border-slate-200 rounded-b-xl shadow-xl z-50" id="results-setting-outbound-to"></div>
                         <input type="hidden" id="setting-outbound-to-code" value="">
                      </div>
@@ -178,13 +186,13 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div class="autocomplete-container relative">
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Home Station</label>
-                            <input type="text" id="setting-outbound-from" class="w-full rounded-xl border-slate-200 py-3 text-sm font-semibold text-slate-700 focus:ring-emerald-500 focus:border-emerald-500" placeholder="Station...">
+                            <input type="text" id="setting-outbound-from" class="w-full rounded-xl border-slate-200 py-3 text-sm font-semibold text-slate-700 focus:ring-emerald-500 focus:border-emerald-500" placeholder="e.g. Didcot Parkway">
                             <div class="autocomplete-results hidden absolute w-full bg-white border border-slate-200 rounded-b-xl shadow-xl z-50" id="results-setting-outbound-from"></div>
                             <input type="hidden" id="setting-outbound-from-code" value=""> 
                         </div>
                         <div class="autocomplete-container relative">
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Work Station</label>
-                            <input type="text" id="setting-outbound-to" class="w-full rounded-xl border-slate-200 py-3 text-sm font-semibold text-slate-700 focus:ring-emerald-500 focus:border-emerald-500" placeholder="Station...">
+                            <input type="text" id="setting-outbound-to" class="w-full rounded-xl border-slate-200 py-3 text-sm font-semibold text-slate-700 focus:ring-emerald-500 focus:border-emerald-500" placeholder="e.g. London Paddington">
                             <div class="autocomplete-results hidden absolute w-full bg-white border border-slate-200 rounded-b-xl shadow-xl z-50" id="results-setting-outbound-to"></div>
                             <input type="hidden" id="setting-outbound-to-code" value="">
                         </div>
@@ -520,20 +528,30 @@
                 try {
                     const s = JSON.parse(stored);
                     els.priceInput.value = s.ticketPrice || '7437.92';
-                    els.outFromCode.value = s.outFromCode || 'DID';
-                    els.outToCode.value = s.outToCode || 'PAD';
-                    els.outFrom.value = s.outFromDisplay || 'Didcot Parkway';
-                    els.outTo.value = s.outToDisplay || 'London Paddington';
+                    
+                    // Only set values if they exist in storage. 
+                    // Do NOT provide 'Didcot Parkway' as a fallback anymore.
+                    if (s.outFromCode) els.outFromCode.value = s.outFromCode;
+                    if (s.outToCode) els.outToCode.value = s.outToCode;
+                    if (s.outFromDisplay) els.outFrom.value = s.outFromDisplay;
+                    if (s.outToDisplay) els.outTo.value = s.outToDisplay;
+                    
                     if(s.fromTimeOutbound) els.timeOutStart.value = s.fromTimeOutbound;
                     if(s.toTimeOutbound) els.timeOutEnd.value = s.toTimeOutbound;
                     if(s.fromTimeInbound) els.timeInStart.value = s.fromTimeInbound;
                     if(s.toTimeInbound) els.timeInEnd.value = s.toTimeInbound;
-                    if (s.officeDays) els.officeDaysInputs.forEach(cb => cb.checked = s.officeDays.includes(cb.value));
-                } catch(e) {}
+                    
+                    if (s.officeDays) {
+                        els.officeDaysInputs.forEach(cb => cb.checked = s.officeDays.includes(cb.value));
+                    }
+                } catch(e) {
+                    console.error("Error loading settings", e);
+                }
             }
             syncReturnJourney();
             updateRouteLabels();
         }
+        
         function saveSettings() {
              const days = Array.from(els.officeDaysInputs).filter(c => c.checked).map(c => c.value);
              const s = { ticketPrice: els.priceInput.value, outFromCode: els.outFromCode.value, outToCode: els.outToCode.value, outFromDisplay: els.outFrom.value, outToDisplay: els.outTo.value, fromTimeOutbound: els.timeOutStart.value, toTimeOutbound: els.timeOutEnd.value, fromTimeInbound: els.timeInStart.value, toTimeInbound: els.timeInEnd.value, officeDays: days };
