@@ -2,6 +2,21 @@
 
 All notable changes to RefundMyRail will be documented in this file.
 
+## [0.1.3] - 2025-11-21
+
+### 🎨 UI/UX Improvements
+- **Email Preview Modal**
+  - Implemented a new "See Example Email" modal on the landing page.
+  - Modal is now fully responsive with a max-width of 800px and max-height of 90vh.
+  - Added a dark overlay backdrop that prevents page scrolling when the modal is open.
+  - Removed the close button in favor of clicking the overlay or pressing Escape to close.
+  - Improved modal styling with cleaner padding and shadow effects.
+
+- **Email Template**
+  - Refined the HTML structure of the email preview for better readability.
+  - Updated the "Potential Refund" KPI card styling.
+  - Cleaned up the table layout for delay reports.
+
 ## [0.1.2] - 2025-11-21
 
 ### 🔧 Backend Improvements
