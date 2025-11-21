@@ -41,6 +41,27 @@
             border-radius: 3px;
         }
 
+        .autocomplete-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: #334155;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .autocomplete-item:hover {
+            background-color: #ecfdf5;
+            color: #059669;
+        }
+
+        .autocomplete-item strong {
+            font-weight: 600;
+        }
+
         @media (max-width: 768px) {
             .mobile-table-card thead {
                 display: none;
@@ -250,6 +271,12 @@
                     <a href="/manage"
                         class="hidden sm:block text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors">Alerts</a>
                 </div>
+                <button id="settings-toggle-button" class="p-2 rounded-lg hover:bg-slate-100 transition-colors" title="Settings">
+                    <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </button>
                 <div id="user-menu">
                     <!-- Populated by auth-ui.js -->
                     <a href="/login"
@@ -767,10 +794,10 @@
             });
 
             if (typeof stationData !== 'undefined') {
-                setupAutocomplete(els.outFrom, document.getElementById('results-setting-outbound-from'), els.outFromCode, true);
-                setupAutocomplete(els.outTo, document.getElementById('results-setting-outbound-to'), els.outToCode, true);
-                setupAutocomplete(els.inFrom, document.getElementById('results-setting-inbound-from'), els.inFromCode, false);
-                setupAutocomplete(els.inTo, document.getElementById('results-setting-inbound-to'), els.inToCode, false);
+                setupAutocomplete(els.outFrom, document.getElementById('results-setting-outbound-from'), els.outFromCode);
+                setupAutocomplete(els.outTo, document.getElementById('results-setting-outbound-to'), els.outToCode);
+                setupAutocomplete(els.inFrom, document.getElementById('results-setting-inbound-from'), els.inFromCode);
+                setupAutocomplete(els.inTo, document.getElementById('results-setting-inbound-to'), els.inToCode);
             }
 
             els.toggleDelay.addEventListener('change', () => renderTable(lastResults));
@@ -1244,7 +1271,8 @@
 
         function getMonday(d) { d = new Date(d); let day = d.getDay(), diff = d.getDate() - day + (day == 0 ? -6 : 1); return new Date(d.setDate(diff)); }
         function parseApiTime(timeStr) { if (!timeStr || timeStr.length !== 4) return null; const h = parseInt(timeStr.substring(0, 2), 10), m = parseInt(timeStr.substring(2, 4), 10); return new Date(1970, 0, 1, h, m, 0); }
-        function setupAutocomplete(input, results, codeInput, isOutbound) {
+        function syncReturnJourney() { if (els.outFrom.value && els.outTo.value) { els.inFrom.value = els.outTo.value; els.inTo.value = els.outFrom.value; els.inFromCode.value = els.outToCode.value; els.inToCode.value = els.outFromCode.value; } }
+        function setupAutocomplete(input, results, codeInput) {
             input.addEventListener('input', function () {
                 const val = this.value.toLowerCase();
                 results.innerHTML = '';
@@ -1253,8 +1281,15 @@
                 if (matches.length > 0) {
                     results.classList.remove('hidden');
                     matches.forEach(s => {
-                        const div = document.createElement('div'); div.className = "px-4 py-3 hover:bg-emerald-50 cursor-pointer text-sm text-slate-700 border-b border-slate-100 last:border-0"; div.innerHTML = `<strong>${s.name}</strong> <span class="text-slate-400 text-xs ml-1">[${s.code}]</span>`;
-                        div.addEventListener('click', () => { input.value = s.name; codeInput.value = s.code; results.classList.add('hidden'); syncReturnJourney(); });
+                        const div = document.createElement('div');
+                        div.className = "autocomplete-item";
+                        div.innerHTML = `<strong>${s.name}</strong> <span class="text-slate-400 text-xs ml-1">[${s.code}]</span>`;
+                        div.addEventListener('click', () => {
+                            input.value = s.name;
+                            codeInput.value = s.code;
+                            results.classList.add('hidden');
+                            syncReturnJourney();
+                        });
                         results.appendChild(div);
                     });
                 } else { results.classList.add('hidden'); }

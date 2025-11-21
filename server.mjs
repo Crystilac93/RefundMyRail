@@ -11,6 +11,7 @@ import { Queue, Worker } from 'bullmq';
 import Redis from 'ioredis';
 import session from 'express-session';
 import { hashPassword, comparePassword, validatePassword, validateEmail, requireAuth } from './auth.mjs';
+import './email-worker.mjs';
 
 // --- Configuration ---
 const CONSUMER_KEY = process.env.RAIL_API_KEY;

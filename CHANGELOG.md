@@ -2,6 +2,40 @@
 
 All notable changes to RefundMyRail will be documented in this file.
 
+## [0.1.2] - 2025-11-21
+
+### 🔧 Backend Improvements
+- **Email Worker Enhancement**
+  - Enhanced email worker reliability and error handling
+  - Improved duplicate entry handling in weekly delay processing
+  - Fixed double-assignment issue in journey results compilation
+  - Optimized worker connection management for Redis instances
+  - Better separation between cache and database connections
+
+### 📊 Technical Updates
+- Refined `email-worker.mjs` for more robust subscription processing
+- Improved data structure handling in journey results array
+- Enhanced error logging for better diagnostics
+
+## [0.1.1] - 2025-11-21
+
+### 🎨 Dashboard UI Improvements
+- **Autocomplete System Rebuild**
+  - Completely rebuilt Dashboard autocomplete functionality
+  - Implemented clean, maintainable autocomplete matching system from `index.html`
+  - Fixed station search reliability issues
+  - Enhanced user experience with consistent autocomplete behavior across all pages
+  
+- **Code Structure**
+  - Cleaned up Dashboard codebase for better maintainability
+  - Standardized autocomplete implementation across the application
+  - Retained all existing journey search, KPI, and results functionality
+
+### 🐛 Bug Fixes
+- Fixed autocomplete dropdown positioning and visibility
+- Resolved station code matching inconsistencies
+- Improved input field validation and user feedback
+
 ## [0.0.1] - Pre‑authentication development
 ## [0.1.0] - 2025-11-21
 
