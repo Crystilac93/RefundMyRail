@@ -271,10 +271,14 @@
                     <a href="/manage"
                         class="hidden sm:block text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors">Settings</a>
                 </div>
-                <button id="settings-toggle-button" class="p-2 rounded-lg hover:bg-slate-100 transition-colors" title="Settings">
+                <button id="settings-toggle-button" class="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+                    title="Settings">
                     <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
                 </button>
                 <div id="user-menu">
@@ -900,6 +904,14 @@
                     if (s.officeDays) {
                         els.officeDaysInputs.forEach(cb => cb.checked = s.officeDays.includes(cb.value));
                     }
+                    // Load default stations from settings
+                    if (s.homeStation) els.outFrom.value = s.homeStation;
+                    if (s.homeStationCode) els.outFromCode.value = s.homeStationCode;
+                    if (s.workStation) els.outTo.value = s.workStation;
+                    if (s.workStationCode) els.outToCode.value = s.workStationCode;
+
+                    // Sync the return journey (reverse the stations)
+                    syncReturnJourney();
                 } catch (e) {
                     console.error("Error loading settings", e);
                 }
@@ -1045,6 +1057,13 @@
                 { type: "Inbound", from: els.inFromCode.value, to: els.inToCode.value, start: els.timeInStart.value, end: els.timeInEnd.value }
             ];
 
+            console.log('🔍 Journey codes:', {
+                outFromDisplay: els.outFrom.value,
+                outFromCode: els.outFromCode.value,
+                outToDisplay: els.outTo.value,
+                outToCode: els.outToCode.value
+            });
+
             if (!journeys[0].from || !journeys[0].to) {
                 showStatus("Please select both Home and Work stations.", "error");
                 setLoading(false);
@@ -1075,6 +1094,7 @@
                         from_time: req.j.start.replace(':', ''), to_time: req.j.end.replace(':', ''),
                         from_date: req.d, to_date: req.d, days: "WEEKDAY"
                     };
+                    console.log('📤 Sending payload:', payload);
                     const res = await fetch(METRICS_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                     if (!res.ok) throw new Error("Submit failed");
                     const { jobId } = await res.json();

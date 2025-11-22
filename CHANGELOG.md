@@ -2,7 +2,44 @@
 
 All notable changes to RefundMyRail will be documented in this file.
 
-## [0.1.4] - 2025-11-21
+## [0.1.5] - "Culham" - 2025-11-22
+
+### ✨ Features
+- **Default Station Preferences**
+  - Added "Default Stations" section to User Settings page
+  - Implemented autocomplete functionality for Home and Work station selection
+  - Station preferences now persist across sessions via localStorage
+  - Dashboard automatically pre-populates with saved default stations
+  - Seamless integration with existing journey search functionality
+
+### 🎨 UI/UX Improvements
+- **Station Autocomplete**
+  - Real-time station search with dropdown suggestions
+  - Highlights matching text in autocomplete results
+  - Displays station names with 3-letter CRS codes
+  - Minimum 2 characters required to trigger search
+  - Shows top 5 matching results
+  - Click outside to dismiss dropdown
+
+- **Settings Integration**
+  - Default stations automatically loaded on Dashboard page load
+  - Return journey stations automatically synced (reversed route)
+  - Stations saved along with other user preferences
+  - Visual feedback on successful save
+
+### 🔧 Technical Details
+- Stations loaded from `/stations.json` with correct property mapping (`stationName`, `crsCode`)
+- Autocomplete implemented in both `ManageSubscriptions.html` and `Dashboard.html`
+- localStorage schema extended with: `homeStation`, `homeStationCode`, `workStation`, `workStationCode`
+- Dashboard `loadSettings()` function enhanced to populate journey fields
+- Return journey synchronization handled via `syncReturnJourney()` function
+
+### 🐛 Bug Fixes
+- Fixed inbound journey station codes not being populated from preferences
+- Corrected station data property mapping for autocomplete filtering
+- Added return journey sync to prevent empty station code API errors
+
+## [0.1.4] - "Cholsey" - 2025-11-21
 
 ### ✨ Features
 - **User Settings Page Refactoring**
@@ -31,7 +68,7 @@ All notable changes to RefundMyRail will be documented in this file.
 - Settings persist across page navigation
 - Both Dashboard and Settings pages can read/write user preferences
 
-## [0.1.3] - 2025-11-21
+## [0.1.3] - "Goring & Streatley" - 2025-11-21
 
 ### 🎨 UI/UX Improvements
 - **Email Preview Modal**
@@ -46,7 +83,7 @@ All notable changes to RefundMyRail will be documented in this file.
   - Updated the "Potential Refund" KPI card styling.
   - Cleaned up the table layout for delay reports.
 
-## [0.1.2] - 2025-11-21
+## [0.1.2] - "Pangbourne" - 2025-11-21
 
 ### 🔧 Backend Improvements
 - **Email Worker Enhancement**
@@ -61,7 +98,7 @@ All notable changes to RefundMyRail will be documented in this file.
 - Improved data structure handling in journey results array
 - Enhanced error logging for better diagnostics
 
-## [0.1.1] - 2025-11-21
+## [0.1.1] - "Tilehurst" - 2025-11-21
 
 ### 🎨 Dashboard UI Improvements
 - **Autocomplete System Rebuild**
@@ -81,7 +118,7 @@ All notable changes to RefundMyRail will be documented in this file.
 - Improved input field validation and user feedback
 
 ## [0.0.1] - Pre‑authentication development
-## [0.1.0] - 2025-11-21
+## [0.1.0] - "Reading" - 2025-11-21
 
 ### 🔐 Authentication System (NEW)
 - **Added complete user authentication system**
@@ -181,7 +218,17 @@ All notable changes to RefundMyRail will be documented in this file.
 ---
 
 ## Version Naming Convention
-- **Major.Minor.Patch**
-  - Major: Breaking changes or major feature additions
-  - Minor: New features, backwards compatible
-  - Patch: Bug fixes and minor improvements
+- **Major.Minor.Patch** with Railway Station Codenames 🚂
+
+### Station Tiers:
+- **Patch** (0.0.x): **Local Stations** - Smaller stations along the route
+  - Examples: Culham, Cholsey, Goring & Streatley, Pangbourne, Tilehurst
+- **Minor** (0.x.0): **Junction Stations** - Important connecting stations
+  - Examples: Reading, Didcot Parkway, Swindon, Oxford
+- **Major** (x.0.0): **Terminus Stations** - Major London terminals
+  - Examples: Paddington, King's Cross, Waterloo, Euston
+
+### Version Types:
+- **Major**: Breaking changes or major feature additions (Terminus)
+- **Minor**: New features, backwards compatible (Junction)
+- **Patch**: Bug fixes and minor improvements (Local)

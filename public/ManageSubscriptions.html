@@ -41,6 +41,25 @@
         .animate-blob {
             animation: blob 7s infinite;
         }
+
+        .autocomplete-results {
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .autocomplete-results .result-item {
+            padding: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .autocomplete-results .result-item:hover {
+            background-color: #f0f0f0;
+        }
     </style>
 </head>
 
@@ -133,6 +152,30 @@
                             </div>
                             <p class="text-xs text-slate-400 mt-2">Used to calculate your estimated refund per journey.
                             </p>
+                        </div>
+
+                        <h3 class="text-lg font-bold text-slate-800 mb-4">Default Stations</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                            <!-- Home Station -->
+                            <div class="bg-slate-50 rounded-xl p-5 border border-slate-200 relative">
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Home
+                                    Station</label>
+                                <input type="text" id="pref-home-station" placeholder="Search station..."
+                                    class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-semibold text-slate-900">
+                                <div class="autocomplete-results hidden absolute w-full bg-white border border-slate-200 rounded-b-lg shadow-xl z-50 left-0 top-full mt-1"
+                                    id="results-pref-home"></div>
+                                <input type="hidden" id="pref-home-station-code" value="">
+                            </div>
+                            <!-- Work Station -->
+                            <div class="bg-slate-50 rounded-xl p-5 border border-slate-200 relative">
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Work
+                                    Station</label>
+                                <input type="text" id="pref-work-station" placeholder="Search station..."
+                                    class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-semibold text-slate-900">
+                                <div class="autocomplete-results hidden absolute w-full bg-white border border-slate-200 rounded-b-lg shadow-xl z-50 left-0 top-full mt-1"
+                                    id="results-pref-work"></div>
+                                <input type="hidden" id="pref-work-station-code" value="">
+                            </div>
                         </div>
 
                         <h3 class="text-lg font-bold text-slate-800 mb-4">Default Commute Times</h3>
@@ -241,10 +284,64 @@
             prefAmEnd: document.getElementById('pref-am-end'),
             prefPmStart: document.getElementById('pref-pm-start'),
             prefPmEnd: document.getElementById('pref-pm-end'),
-            saveBtn: document.getElementById('save-prefs-btn')
+            saveBtn: document.getElementById('save-prefs-btn'),
+
+            // Station inputs
+            prefHomeStation: document.getElementById('pref-home-station'),
+            prefHomeStationCode: document.getElementById('pref-home-station-code'),
+            prefWorkStation: document.getElementById('pref-work-station'),
+            prefWorkStationCode: document.getElementById('pref-work-station-code'),
+            resultsHome: document.getElementById('results-pref-home'),
+            resultsWork: document.getElementById('results-pref-work')
         };
 
         let currentUser = null;
+        let stationsData = [];
+
+        // Autocomplete function
+        function setupAutocomplete(inputEl, resultsEl, codeEl) {
+            inputEl.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                if (query.length < 2) {
+                    resultsEl.classList.add('hidden');
+                    return;
+                }
+
+                const matches = stationsData
+                    .filter(s => s.stationName && s.stationName.toLowerCase().includes(query.toLowerCase()))
+                    .slice(0, 5);
+
+                if (matches.length === 0) {
+                    resultsEl.classList.add('hidden');
+                    return;
+                }
+
+                resultsEl.innerHTML = matches.map(s => {
+                    const name = s.stationName.replace(
+                        new RegExp(query, 'gi'),
+                        match => `<strong>${match}</strong>`
+                    );
+                    return `<div class="autocomplete-item" data-name="${s.stationName}" data-code="${s.crsCode}">${name} (${s.crsCode})</div>`;
+                }).join('');
+                resultsEl.classList.remove('hidden');
+            });
+
+            resultsEl.addEventListener('click', (e) => {
+                const item = e.target.closest('.autocomplete-item');
+                if (!item) return;
+
+                inputEl.value = item.dataset.name;
+                codeEl.value = item.dataset.code;
+                resultsEl.classList.add('hidden');
+            });
+
+            // Close on outside click
+            document.addEventListener('click', (e) => {
+                if (!inputEl.contains(e.target) && !resultsEl.contains(e.target)) {
+                    resultsEl.classList.add('hidden');
+                }
+            });
+        }
 
         // Initialize auth UI and protect route
         (async () => {
@@ -265,6 +362,18 @@
 
             // Setup Tabs
             setupTabs();
+
+            // Load stations and setup autocomplete
+            fetch('/stations.json')
+                .then(res => res.json())
+                .then(data => {
+                    stationsData = data;
+                    console.log('✅ Loaded', stationsData.length, 'stations');
+                    // Setup autocomplete after stations load
+                    setupAutocomplete(els.prefHomeStation, els.resultsHome, els.prefHomeStationCode);
+                    setupAutocomplete(els.prefWorkStation, els.resultsWork, els.prefWorkStationCode);
+                })
+                .catch(e => console.error('❌ Failed to load stations:', e));
 
             // Load Data
             loadPreferences();
@@ -312,6 +421,13 @@
                     if (s.toTimeOutbound) els.prefAmEnd.value = s.toTimeOutbound;
                     if (s.fromTimeInbound) els.prefPmStart.value = s.fromTimeInbound;
                     if (s.toTimeInbound) els.prefPmEnd.value = s.toTimeInbound;
+
+                    // Load stations
+                    if (s.homeStation) els.prefHomeStation.value = s.homeStation;
+                    if (s.homeStationCode) els.prefHomeStationCode.value = s.homeStationCode;
+                    if (s.workStation) els.prefWorkStation.value = s.workStation;
+                    if (s.workStationCode) els.prefWorkStationCode.value = s.workStationCode;
+
                 } catch (e) {
                     console.error("Error loading settings", e);
                 }
@@ -332,6 +448,12 @@
             s.toTimeOutbound = els.prefAmEnd.value;
             s.fromTimeInbound = els.prefPmStart.value;
             s.toTimeInbound = els.prefPmEnd.value;
+
+            // Save stations
+            s.homeStation = els.prefHomeStation.value;
+            s.homeStationCode = els.prefHomeStationCode.value;
+            s.workStation = els.prefWorkStation.value;
+            s.workStationCode = els.prefWorkStationCode.value;
 
             localStorage.setItem('railDelaySettings', JSON.stringify(s));
 
