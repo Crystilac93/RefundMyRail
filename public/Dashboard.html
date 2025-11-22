@@ -1116,10 +1116,22 @@
             let metricJobIds = [];
             try {
                 for (const req of metricRequests) {
+                    // Determine day type based on the date
+                    const searchDate = new Date(req.d);
+                    const dayOfWeek = searchDate.getDay(); // 0 = Sunday, 6 = Saturday
+                    let dayType;
+                    if (dayOfWeek === 0) {
+                        dayType = "SUNDAY";
+                    } else if (dayOfWeek === 6) {
+                        dayType = "SATURDAY";
+                    } else {
+                        dayType = "WEEKDAY";
+                    }
+
                     const payload = {
                         from_loc: req.j.from, to_loc: req.j.to,
                         from_time: req.j.start.replace(':', ''), to_time: req.j.end.replace(':', ''),
-                        from_date: req.d, to_date: req.d, days: "WEEKDAY"
+                        from_date: req.d, to_date: req.d, days: dayType
                     };
                     console.log('📤 Sending payload:', payload);
                     const res = await fetch(METRICS_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
